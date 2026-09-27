@@ -1,0 +1,50 @@
+# General
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+
+# Laravel backend
+/backend/.env
+/backend/.env.*
+!/backend/.env.example
+/backend/vendor/
+/backend/node_modules/
+/backend/public/hot
+/backend/storage/*.key
+/backend/storage/logs/
+/backend/storage/framework/cache/*
+/backend/storage/framework/sessions/*
+/backend/storage/framework/views/*
+/backend/bootstrap/cache/*
+/backend/.phpunit.result.cache
+/backend/phpunit.xml
+/backend/tests/coverage/
+/backend/.php-cs-fixer.cache
+
+# Desktop / WPF
+/desktop/**/bin/
+/desktop/**/obj/
+/desktop/**/*.user
+/desktop/**/*.suo
+
+# Mobile / Flutter
+/mobile/.dart_tool/
+/mobile/.packages
+/mobile/.pub-cache/
+/mobile/build/
+/mobile/.idea/
+/mobile/.vscode/
+/mobile/android/key.properties
+/mobile/android/app/key.properties
+/mobile/ios/Pods/
+/mobile/ios/Runner.xcworkspace/
+/mobile/ios/Pods/Pods.xcodeproj
+/mobile/.flutter-plugins
+/mobile/.flutter-plugins-dependencies
+
+# Root docs and config
+.env
+.env.*
+!.env.example
