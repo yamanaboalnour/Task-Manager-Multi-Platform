@@ -3,27 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
+use App\Services\AuthService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    public function register(RegisterRequest $request, AuthService $auth)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'confirmed', Password::min(8)],
-        ]);
-
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-        ]);
+        $user = $auth->register($request->validated());
 
         $token = $user->createToken($request->string('device_name')->toString() ?: 'api-client')->plainTextToken;
 
@@ -33,16 +23,11 @@ class AuthController extends Controller
         ], 201);
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request, AuthService $auth)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
-        ]);
+        $user = $auth->authenticate($request->validated());
 
-        $user = User::where('email', $credentials['email'])->first();
-
-        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+        if (! $user) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);

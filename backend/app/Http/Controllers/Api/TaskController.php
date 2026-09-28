@@ -6,55 +6,42 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Task;
+use App\Services\TaskService;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, TaskService $tasks)
     {
-        return response()->json(
-            $request->user()->tasks()->orderByDesc('updated_at')->get()
-        );
+        return response()->json($tasks->listFor($request->user()));
     }
 
-    public function store(StoreTaskRequest $request)
+    public function store(StoreTaskRequest $request, TaskService $tasks)
     {
-        $task = $request->user()->tasks()->create($request->validated());
+        $task = $tasks->createFor($request->user(), $request->validated());
 
         return response()->json($task, 201);
     }
 
-    public function show(Task $task)
+    public function show(Request $request, Task $task, TaskService $tasks)
     {
-        $this->authorize('view', $task);
-
-        return response()->json($task);
+        return response()->json($tasks->showFor($request->user(), $task));
     }
 
-    public function update(UpdateTaskRequest $request, Task $task)
+    public function update(UpdateTaskRequest $request, Task $task, TaskService $tasks)
     {
-        $this->authorize('update', $task);
-
-        $task->update($request->validated());
-
-        return response()->json($task);
+        return response()->json($tasks->updateFor($request->user(), $task, $request->validated()));
     }
 
-    public function destroy(Task $task)
+    public function destroy(Request $request, Task $task, TaskService $tasks)
     {
-        $this->authorize('delete', $task);
-
-        $task->delete();
+        $tasks->deleteFor($request->user(), $task);
 
         return response()->json(['message' => 'Task deleted successfully.']);
     }
 
-    public function complete(Task $task)
+    public function complete(Request $request, Task $task, TaskService $tasks)
     {
-        $this->authorize('update', $task);
-
-        $task->update(['is_completed' => ! $task->is_completed]);
-
-        return response()->json($task);
+        return response()->json($tasks->toggleCompletionFor($request->user(), $task));
     }
 }

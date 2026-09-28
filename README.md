@@ -5,7 +5,7 @@ A training monorepo for a multi-platform task management app built around a sing
 ## Architecture
 
 - Laravel API backend with Sanctum authentication
-- Web UI served by Laravel Blade
+- Web UI served by Laravel Blade with Laravel session authentication
 - WPF desktop client for Windows
 - Flutter mobile client
 - SQL Server as the shared database
@@ -50,7 +50,11 @@ Task-Manager-Multi-Platform/
 
 The LocalDB connection uses `DB_PORT=null`; LocalDB is a named instance and must not have Laravel append the usual SQL Server TCP port (`1433`). For a regular SQL Server host, set `DB_HOST`, `DB_PORT`, database credentials, and encryption settings to match that server.
 
-## API
+## Web and API
+
+The Laravel Blade Web UI is available at `/register`, `/login`, and `/tasks`. It uses Laravel sessions, CSRF protection, and the same shared authentication, validation, task service, and ownership policy as the API.
+
+Register and login are public API routes. All other API endpoints require a Sanctum bearer token:
 
 Register and login are public. All other endpoints require a Sanctum bearer token:
 
@@ -66,7 +70,7 @@ Register and login are public. All other endpoints require a Sanctum bearer toke
 
 ## Current phase status
 
-The Laravel API is implemented and configured for SQL Server LocalDB. WPF and Flutter clients have not started; they will use this API and will not connect to SQL Server directly.
+The Laravel Web UI and API are configured for SQL Server LocalDB. WPF and Flutter use the API and do not connect to SQL Server directly.
 
 Run the backend feature tests from `backend/` with `php artisan test`. They use an in-memory SQLite test database; SQL Server connection, migrations, and HTTP API behavior have also been checked against LocalDB.
 
