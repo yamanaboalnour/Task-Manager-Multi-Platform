@@ -12,7 +12,10 @@ class AuthTest extends TestCase
 
     public function test_guest_can_open_registration_and_register_into_a_session(): void
     {
-        $this->get('/register')->assertOk()->assertSee('Create your account');
+        $this->get('/register')
+            ->assertOk()
+            ->assertSee('إنشاء حسابك')
+            ->assertSee('lang="ar" dir="rtl"', false);
 
         $this->post('/register', [
             'name' => 'Web User',
@@ -23,21 +26,21 @@ class AuthTest extends TestCase
 
         $this->assertAuthenticated();
         $this->assertDatabaseHas('users', ['email' => 'web-user@example.test']);
-        $this->get('/tasks')->assertOk()->assertSee('My tasks');
+        $this->get('/tasks')->assertOk()->assertSee('مهامي');
     }
 
     public function test_registration_displays_validation_errors(): void
     {
-        $this->from('/register')
+        $this->followingRedirects()
+            ->from('/register')
             ->post('/register', [
                 'name' => '',
                 'email' => 'not-an-email',
                 'password' => 'short',
                 'password_confirmation' => 'different',
             ])
-            ->assertRedirect('/register')
-            ->assertSessionHasErrors(['name', 'email', 'password']);
-
+            ->assertOk()
+            ->assertSee('حقل الاسم مطلوب.');
         $this->assertGuest();
     }
 
@@ -48,7 +51,7 @@ class AuthTest extends TestCase
             'password' => 'password123',
         ]);
 
-        $this->get('/login')->assertOk()->assertSee('Welcome back');
+        $this->get('/login')->assertOk()->assertSee('مرحبًا بعودتك');
         $this->post('/login', [
             'email' => 'web-login@example.test',
             'password' => 'password123',
@@ -72,14 +75,14 @@ class AuthTest extends TestCase
             'password' => 'password123',
         ]);
 
-        $this->from('/login')
+        $this->followingRedirects()
+            ->from('/login')
             ->post('/login', [
                 'email' => 'web-login@example.test',
                 'password' => 'incorrect',
             ])
-            ->assertRedirect('/login')
-            ->assertSessionHasErrors('email');
-
+            ->assertOk()
+            ->assertSee('بيانات تسجيل الدخول غير صحيحة.');
         $this->assertGuest();
     }
 

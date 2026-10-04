@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="TaskManager" xml:space="preserve"><value>إدارة المهام</value></data>
+  <data name="DesktopSubtitle" xml:space="preserve"><value>تطبيق سطح المكتب لمساحة مهامك المتصلة بـ Laravel</value></data>
+  <data name="SignIn" xml:space="preserve"><value>تسجيل الدخول</value></data>
+  <data name="ApiBaseUrl" xml:space="preserve"><value>عنوان API الأساسي</value></data>
+  <data name="ApiUrlToolTip" xml:space="preserve"><value>عنوان خادم Laravel، مثال: http://127.0.0.1:8000</value></data>
+  <data name="Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="Password" xml:space="preserve"><value>كلمة المرور</value></data>
+  <data name="ConfirmPassword" xml:space="preserve"><value>تأكيد كلمة المرور</value></data>
+  <data name="LogOut" xml:space="preserve"><value>تسجيل الخروج</value></data>
+  <data name="Refresh" xml:space="preserve"><value>تحديث</value></data>
+  <data name="MyTasks" xml:space="preserve"><value>مهامي</value></data>
+  <data name="NewTask" xml:space="preserve"><value>مهمة جديدة</value></data>
+  <data name="Title" xml:space="preserve"><value>العنوان</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="SaveTask" xml:space="preserve"><value>حفظ المهمة</value></data>
+  <data name="Delete" xml:space="preserve"><value>حذف</value></data>
+  <data name="ChooseOrCreateTask" xml:space="preserve"><value>اختر مهمة أو أنشئ مهمة جديدة للبدء.</value></data>
+  <data name="Completed" xml:space="preserve"><value>مكتملة</value></data>
+  <data name="Pending" xml:space="preserve"><value>قيد الإنجاز</value></data>
+  <data name="MarkComplete" xml:space="preserve"><value>تحديد كمكتملة</value></data>
+  <data name="MarkPending" xml:space="preserve"><value>إعادة إلى قيد الإنجاز</value></data>
+  <data name="SignInWithApi" xml:space="preserve"><value>سجّل الدخول باستخدام حسابك.</value></data>
+  <data name="WelcomeMessage" xml:space="preserve"><value>مرحبًا، {0}</value></data>
+  <data name="TaskDetails" xml:space="preserve"><value>تفاصيل المهمة</value></data>
+  <data name="CredentialsRequired" xml:space="preserve"><value>أدخل البريد الإلكتروني وكلمة المرور.</value></data>
+  <data name="LoadingTasks" xml:space="preserve"><value>جارٍ تحميل المهام...</value></data>
+  <data name="SignedOut" xml:space="preserve"><value>تم تسجيل خروجك.</value></data>
+  <data name="LogoutApiError" xml:space="preserve"><value>تم تسجيل الخروج محليًا، لكن تعذر إبطال الرمز لدى API: {0}</value></data>
+  <data name="TaskCount" xml:space="preserve"><value>عدد المهام: {0}</value></data>
+  <data name="TitleRequired" xml:space="preserve"><value>عنوان المهمة مطلوب.</value></data>
+  <data name="TaskLengthLimit" xml:space="preserve"><value>يجب ألا يتجاوز العنوان 255 حرفًا والوصف 5000 حرف.</value></data>
+  <data name="TaskSaved" xml:space="preserve"><value>تم حفظ المهمة.</value></data>
+  <data name="TaskCompleted" xml:space="preserve"><value>تم إكمال المهمة.</value></data>
+  <data name="TaskMarkedPending" xml:space="preserve"><value>أُعيدت المهمة إلى قيد الإنجاز.</value></data>
+  <data name="TaskDeleted" xml:space="preserve"><value>تم حذف المهمة.</value></data>
+  <data name="SessionExpired" xml:space="preserve"><value>انتهت صلاحية الجلسة. سجّل الدخول مجددًا.</value></data>
+  <data name="PermissionDenied" xml:space="preserve"><value>لا تملك صلاحية تنفيذ هذا الإجراء.</value></data>
+  <data name="TaskNotFound" xml:space="preserve"><value>المهمة غير موجودة أو لم تعد متاحة.</value></data>
+  <data name="ApiUnavailable" xml:space="preserve"><value>تعذر الاتصال بالخادم. تحقق من تشغيله ومن عنوان API.</value></data>
+  <data name="ApiTimedOut" xml:space="preserve"><value>انتهت مهلة الاتصال بالخادم.</value></data>
+  <data name="UnexpectedError" xml:space="preserve"><value>حدث خطأ غير متوقع. يرجى المحاولة مجددًا.</value></data>
+  <data name="EmptySignInResponse" xml:space="preserve"><value>أعاد الخادم استجابة تسجيل دخول فارغة.</value></data>
+  <data name="EmptyTaskResponse" xml:space="preserve"><value>أعاد الخادم استجابة مهمة فارغة.</value></data>
+  <data name="InvalidApiUrl" xml:space="preserve"><value>أدخل عنوان API صالحًا يبدأ بـ http:// أو https://.</value></data>
+  <data name="ApiRequestFailed" xml:space="preserve"><value>فشل الطلب (HTTP {0}).</value></data>
+  <data name="DeviceName" xml:space="preserve"><value>اسم الجهاز</value></data>
+  <data name="TaskStatus" xml:space="preserve"><value>حالة الإنجاز</value></data>
+  <data name="Field" xml:space="preserve"><value>الحقل</value></data>
+</root>

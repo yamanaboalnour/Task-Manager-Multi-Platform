@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
+import '../l10n/generated/app_localizations_ar.dart';
 import '../models/task.dart';
 
 class ApiException implements Exception {
@@ -73,7 +74,7 @@ class HttpTaskRepository implements TaskRepository {
         !uri.hasAuthority ||
         !const {'http', 'https'}.contains(uri.scheme) ||
         uri.host.isEmpty) {
-      throw const ApiException('Enter a valid http:// or https:// URL.');
+      throw ApiException(AppLocalizationsAr().invalidApiUrl);
     }
     final normalized = value.trim().replaceFirst(RegExp(r'/+$'), '');
     _baseUrl = normalized;
@@ -141,13 +142,24 @@ class HttpTaskRepository implements TaskRepository {
     } on ApiException {
       rethrow;
     } on FormatException {
-      throw const ApiException('The server returned an unreadable response.');
+      throw ApiException(AppLocalizationsAr().unreadableResponse);
     } catch (error) {
-      throw ApiException('Could not connect to the API. ${error.toString()}');
+      throw ApiException(AppLocalizationsAr().networkError);
     }
   }
 
   String _errorMessage(dynamic response, int statusCode) {
+    final strings = AppLocalizationsAr();
+    if (statusCode == 401) {
+      return strings.sessionExpired;
+    }
+    if (statusCode == 403) {
+      return strings.permissionDenied;
+    }
+    if (statusCode == 404) {
+      return strings.taskNotFound;
+    }
+
     if (response is Map<String, dynamic>) {
       final errors = response['errors'];
       if (errors is Map<String, dynamic>) {
@@ -158,7 +170,7 @@ class HttpTaskRepository implements TaskRepository {
       final message = response['message'];
       if (message is String && message.isNotEmpty) return message;
     }
-    return 'Request failed (HTTP $statusCode).';
+    return strings.requestFailed(statusCode);
   }
 
   @override
@@ -168,7 +180,7 @@ class HttpTaskRepository implements TaskRepository {
   }) async {
     final response = await _request('POST', endpoint, body: body);
     if (response is! Map<String, dynamic>) {
-      throw const ApiException('The server returned an invalid response.');
+      throw ApiException(AppLocalizationsAr().invalidServerResponse);
     }
     return response;
   }
@@ -178,7 +190,7 @@ class HttpTaskRepository implements TaskRepository {
     final response = await _request('GET', '/me', token: token);
     if (response is! Map<String, dynamic> ||
         response['user'] is! Map<String, dynamic>) {
-      throw const ApiException('The server returned an invalid user response.');
+      throw ApiException(AppLocalizationsAr().invalidUserResponse);
     }
     return response['user'] as Map<String, dynamic>;
   }
@@ -192,7 +204,7 @@ class HttpTaskRepository implements TaskRepository {
   Future<List<Task>> getTasks(String token) async {
     final response = await _request('GET', '/tasks', token: token);
     if (response is! List) {
-      throw const ApiException('The server returned an invalid task list.');
+      throw ApiException(AppLocalizationsAr().invalidTaskListResponse);
     }
     return response
         .map((item) => Task.fromJson(item as Map<String, dynamic>))

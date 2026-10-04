@@ -41,7 +41,7 @@ public sealed class TaskItem : INotifyPropertyChanged
     }
 
     [JsonIgnore]
-    public string CompletionLabel => IsCompleted ? "Completed" : "Active";
+    public string CompletionLabel => IsCompleted ? Properties.Strings.Completed : Properties.Strings.Pending;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 

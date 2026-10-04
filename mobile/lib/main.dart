@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'data/task_repository.dart';
+import 'l10n/generated/app_localizations.dart';
 import 'models/task.dart';
 import 'view_models/task_view_model.dart';
 
@@ -34,7 +36,15 @@ class _TaskManagerAppState extends State<TaskManagerApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Task Manager',
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
+      locale: const Locale('ar'),
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -51,8 +61,13 @@ class _TaskManagerAppState extends State<TaskManagerApp> {
         listenable: widget.viewModel,
         builder: (context, _) {
           if (!widget.viewModel.initialized) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
+            return Scaffold(
+              body: Center(
+                child: Semantics(
+                  label: AppLocalizations.of(context)!.loading,
+                  child: const CircularProgressIndicator(),
+                ),
+              ),
             );
           }
           return widget.viewModel.isAuthenticated
@@ -109,6 +124,7 @@ class _SignInScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     final vm = widget.viewModel;
+    final strings = AppLocalizations.of(context)!;
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -128,7 +144,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      _registering ? 'Create your account' : 'Welcome back',
+                      _registering ? strings.registerTitle : strings.welcomeBack,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineMedium
                           ?.copyWith(fontWeight: FontWeight.w700),
@@ -136,8 +152,8 @@ class _SignInScreenState extends State<SignInScreen> {
                     const SizedBox(height: 8),
                     Text(
                       _registering
-                          ? 'Sign up to keep your tasks in sync.'
-                          : 'Sign in to pick up where you left off.',
+                          ? strings.registerSubtitle
+                          : strings.loginSubtitle,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
@@ -146,20 +162,21 @@ class _SignInScreenState extends State<SignInScreen> {
                       controller: _baseUrl,
                       keyboardType: TextInputType.url,
                       autocorrect: false,
-                      decoration: const InputDecoration(
-                        labelText: 'API base URL',
-                        hintText: 'https://your-server.example',
+                      decoration: InputDecoration(
+                        labelText: strings.apiBaseUrl,
+                        hintText: strings.apiBaseUrlHint,
                         prefixIcon: Icon(Icons.link),
-                        helperText:
-                            'Android emulator default: http://10.0.2.2:8000',
+                        helperText: strings.apiBaseUrlHelp,
                       ),
+                      textDirection: TextDirection.ltr,
+                      textAlign: TextAlign.left,
                       validator: (value) {
                         final uri = Uri.tryParse(value?.trim() ?? '');
                         if (uri == null ||
                             !uri.hasAuthority ||
                             !const {'http', 'https'}.contains(uri.scheme) ||
                             uri.host.isEmpty) {
-                          return 'Enter a valid http:// or https:// URL';
+                          return strings.invalidApiUrl;
                         }
                         return null;
                       },
@@ -169,13 +186,13 @@ class _SignInScreenState extends State<SignInScreen> {
                       TextFormField(
                         controller: _name,
                         textCapitalization: TextCapitalization.words,
-                        decoration: const InputDecoration(
-                          labelText: 'Name',
+                        decoration: InputDecoration(
+                          labelText: strings.name,
                           prefixIcon: Icon(Icons.person_outline),
                         ),
                         validator: (value) =>
                             value == null || value.trim().isEmpty
-                            ? 'Name is required'
+                            ? strings.nameRequired
                             : null,
                       ),
                       const SizedBox(height: 16),
@@ -184,14 +201,16 @@ class _SignInScreenState extends State<SignInScreen> {
                       controller: _email,
                       keyboardType: TextInputType.emailAddress,
                       autocorrect: false,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
+                      decoration: InputDecoration(
+                        labelText: strings.email,
                         prefixIcon: Icon(Icons.mail_outline),
                       ),
+                      textDirection: TextDirection.ltr,
+                      textAlign: TextAlign.left,
                       validator: (value) {
                         final email = value?.trim() ?? '';
                         if (email.isEmpty || !email.contains('@')) {
-                          return 'Enter a valid email address';
+                          return strings.emailRequired;
                         }
                         return null;
                       },
@@ -200,16 +219,18 @@ class _SignInScreenState extends State<SignInScreen> {
                     TextFormField(
                       controller: _password,
                       obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Password',
+                      decoration: InputDecoration(
+                        labelText: strings.password,
                         prefixIcon: Icon(Icons.lock_outline),
                       ),
+                      textDirection: TextDirection.ltr,
+                      textAlign: TextAlign.left,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Password is required';
+                          return strings.passwordRequired;
                         }
                         if (_registering && value.length < 8) {
-                          return 'Use at least 8 characters';
+                          return strings.passwordMinLength;
                         }
                         return null;
                       },
@@ -219,12 +240,12 @@ class _SignInScreenState extends State<SignInScreen> {
                       TextFormField(
                         controller: _confirmation,
                         obscureText: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Confirm password',
+                        decoration: InputDecoration(
+                          labelText: strings.confirmPassword,
                           prefixIcon: Icon(Icons.lock_reset_outlined),
                         ),
                         validator: (value) => value != _password.text
-                            ? 'Passwords do not match'
+                            ? strings.passwordsMismatch
                             : null,
                       ),
                     ],
@@ -244,7 +265,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : Text(_registering ? 'Create account' : 'Sign in'),
+                            : Text(_registering ? strings.createAccount : strings.signIn),
                       ),
                     ),
                     TextButton(
@@ -256,8 +277,8 @@ class _SignInScreenState extends State<SignInScreen> {
                             },
                       child: Text(
                         _registering
-                            ? 'Already have an account? Sign in'
-                            : 'New here? Create an account',
+                            ? strings.alreadyHaveAccount
+                            : strings.newAccountPrompt,
                       ),
                     ),
                   ],
@@ -284,19 +305,20 @@ class TaskListScreen extends StatelessWidget {
   }
 
   Future<void> _confirmDelete(BuildContext context, Task task) async {
+    final strings = AppLocalizations.of(context)!;
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete task?'),
-        content: Text('“${task.title}” will be permanently deleted.'),
+        title: Text(strings.deleteTaskQuestion),
+        content: Text(strings.deleteTaskConfirmation(task.title)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(strings.cancel),
           ),
           FilledButton.tonal(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
+            child: Text(strings.delete),
           ),
         ],
       ),
@@ -305,19 +327,20 @@ class TaskListScreen extends StatelessWidget {
   }
 
   Future<void> _logout(BuildContext context) async {
+    final strings = AppLocalizations.of(context)!;
     final shouldLogout = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Sign out?'),
-        content: const Text('Your tasks will stay safely on your account.'),
+        title: Text(strings.signOutQuestion),
+        content: Text(strings.signOutMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(strings.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Sign out'),
+            child: Text(strings.signOut),
           ),
         ],
       ),
@@ -331,15 +354,16 @@ class TaskListScreen extends StatelessWidget {
       listenable: viewModel,
       builder: (context, _) {
         final vm = viewModel;
+        final strings = AppLocalizations.of(context)!;
         return Scaffold(
           appBar: AppBar(
-            title: const Text(
-              'My tasks',
+            title: Text(
+              strings.myTasks,
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
             actions: [
               IconButton(
-                tooltip: 'Sign out',
+                tooltip: strings.signOut,
                 onPressed: () => _logout(context),
                 icon: const Icon(Icons.logout),
               ),
@@ -348,24 +372,24 @@ class TaskListScreen extends StatelessWidget {
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () => _openTaskEditor(context),
             icon: const Icon(Icons.add),
-            label: const Text('New task'),
+            label: Text(strings.newTask),
           ),
           body: Column(
             children: [
               if (vm.user?['name'] is String)
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                  padding: const EdgeInsetsDirectional.fromSTEB(20, 0, 20, 12),
                   child: Align(
-                    alignment: Alignment.centerLeft,
+                    alignment: AlignmentDirectional.centerStart,
                     child: Text(
-                      'Hello, ${vm.user!['name']}',
+                      strings.helloUser(vm.user!['name'] as String),
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ),
                 ),
               if (vm.error != null)
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 12),
                   child: _ErrorMessage(
                     message: vm.error!,
                     onRetry: vm.isLoading ? null : vm.loadTasks,
@@ -389,7 +413,7 @@ class TaskListScreen extends StatelessWidget {
                               )
                             : ListView.separated(
                                 physics: const AlwaysScrollableScrollPhysics(),
-                                padding: const EdgeInsets.fromLTRB(
+                                padding: const EdgeInsetsDirectional.fromSTEB(
                                   16,
                                   4,
                                   16,
@@ -435,6 +459,7 @@ class _TaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context)!;
     final titleStyle = Theme.of(context).textTheme.titleMedium;
     return Card(
       margin: EdgeInsets.zero,
@@ -442,7 +467,10 @@ class _TaskCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         child: Row(
           children: [
-            Checkbox(value: task.isCompleted, onChanged: (_) => onToggle()),
+            Semantics(
+              label: task.isCompleted ? strings.markPending : strings.markComplete,
+              child: Checkbox(value: task.isCompleted, onChanged: (_) => onToggle()),
+            ),
             Expanded(
               child: GestureDetector(
                 onTap: onEdit,
@@ -477,11 +505,11 @@ class _TaskCard extends StatelessWidget {
               ),
             ),
             PopupMenuButton<String>(
-              tooltip: 'Task actions',
+              tooltip: strings.taskActions,
               onSelected: (value) => value == 'edit' ? onEdit() : onDelete(),
-              itemBuilder: (context) => const [
-                PopupMenuItem(value: 'edit', child: Text('Edit')),
-                PopupMenuItem(value: 'delete', child: Text('Delete')),
+              itemBuilder: (context) => [
+                PopupMenuItem(value: 'edit', child: Text(strings.edit)),
+                PopupMenuItem(value: 'delete', child: Text(strings.delete)),
               ],
             ),
           ],
@@ -534,15 +562,16 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
     } else {
       setState(() {
         _saving = false;
-        _error = widget.viewModel.error ?? 'The task could not be saved.';
+        _error = widget.viewModel.error ?? AppLocalizations.of(context)!.taskSaveFailed;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: Text(widget.task == null ? 'New task' : 'Edit task'),
+      title: Text(widget.task == null ? strings.newTask : strings.editTask),
       content: SizedBox(
         width: 420,
         child: Form(
@@ -555,9 +584,9 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
                 autofocus: true,
                 maxLength: 255,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(labelText: 'Title'),
+                decoration: InputDecoration(labelText: strings.title),
                 validator: (value) => value == null || value.trim().isEmpty
-                    ? 'Title is required'
+                    ? strings.titleRequired
                     : null,
               ),
               const SizedBox(height: 12),
@@ -567,8 +596,8 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
                 maxLines: 4,
                 maxLength: 5000,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(
-                  labelText: 'Description (optional)',
+                decoration: InputDecoration(
+                  labelText: strings.optionalDescription,
                   alignLabelWithHint: true,
                 ),
               ),
@@ -583,7 +612,7 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
       actions: [
         TextButton(
           onPressed: _saving ? null : () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(strings.cancel),
         ),
         FilledButton(
           onPressed: _saving ? null : _save,
@@ -592,7 +621,7 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
                   dimension: 18,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Save'),
+              : Text(strings.save),
         ),
       ],
     );
@@ -604,6 +633,7 @@ class _EmptyTasks extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -617,11 +647,11 @@ class _EmptyTasks extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'You’re all caught up',
+              strings.noTasks,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 4),
-            const Text('Add a task whenever something comes to mind.'),
+            Text(strings.noTasksHint),
           ],
         ),
       ),
@@ -637,6 +667,7 @@ class _ErrorMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
@@ -660,7 +691,7 @@ class _ErrorMessage extends StatelessWidget {
             ),
           ),
           if (onRetry != null)
-            TextButton(onPressed: onRetry, child: const Text('Retry')),
+            TextButton(onPressed: onRetry, child: Text(strings.retry)),
         ],
       ),
     );

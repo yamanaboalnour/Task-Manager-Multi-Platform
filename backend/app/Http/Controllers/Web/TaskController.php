@@ -24,7 +24,7 @@ class TaskController extends Controller
     {
         $tasks->createFor($request->user(), $request->validated());
 
-        return redirect()->route('tasks.index')->with('status', 'Task added.');
+        return redirect()->route('tasks.index')->with('status', __('Task added.'));
     }
 
     public function update(
@@ -34,20 +34,20 @@ class TaskController extends Controller
     ): RedirectResponse {
         $tasks->updateFor($request->user(), $task, $request->validated());
 
-        return redirect()->route('tasks.index')->with('status', 'Task updated.');
+        return redirect()->route('tasks.index')->with('status', __('Task updated.'));
     }
 
     public function toggleCompletion(Request $request, Task $task, TaskService $tasks): RedirectResponse
     {
         $tasks->toggleCompletionFor($request->user(), $task);
 
-        return redirect()->route('tasks.index')->with('status', 'Task status updated.');
+        return redirect()->route('tasks.index')->with('status', __('Task status updated.'));
     }
 
     public function destroy(Request $request, Task $task, TaskService $tasks): RedirectResponse
     {
         $tasks->deleteFor($request->user(), $task);
 
-        return redirect()->route('tasks.index')->with('status', 'Task deleted.');
+        return redirect()->route('tasks.index')->with('status', __('Task deleted.'));
     }
 }

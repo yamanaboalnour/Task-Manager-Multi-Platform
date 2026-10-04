@@ -5,9 +5,9 @@ A training monorepo for a multi-platform task management app built around a sing
 ## Architecture
 
 - Laravel API backend with Sanctum authentication
-- Web UI served by Laravel Blade with Laravel session authentication
+- Arabic Laravel Blade Web UI with RTL and Laravel session authentication
 - WPF desktop client for Windows
-- Flutter mobile client
+- Arabic Flutter mobile client with RTL
 - SQL Server as the shared database
 
 ## Repository Structure
@@ -52,9 +52,9 @@ The LocalDB connection uses `DB_PORT=null`; LocalDB is a named instance and must
 
 ## Web and API
 
-The Laravel Blade Web UI is available at `/register`, `/login`, and `/tasks`. It uses Laravel sessions, CSRF protection, and the same shared authentication, validation, task service, and ownership policy as the API.
+Arabic (`ar`) is the default interface language. The Blade UI uses right-to-left document direction, while email/password and technical values retain left-to-right direction where appropriate.
 
-Register and login are public API routes. All other API endpoints require a Sanctum bearer token:
+The Laravel Blade Web UI is available at `/register`, `/login`, and `/tasks`. It uses Laravel sessions, CSRF protection, and the same shared authentication, validation, task service, and ownership policy as the API.
 
 Register and login are public. All other endpoints require a Sanctum bearer token:
 
@@ -68,9 +68,31 @@ Register and login are public. All other endpoints require a Sanctum bearer toke
 | GET, PUT, DELETE | `/api/v1/tasks/{task}` | Read, update, or delete an owned task |
 | PATCH | `/api/v1/tasks/{task}/complete` | Toggle task completion |
 
+## Run the clients
+
+Run the WPF desktop client on Windows:
+
+```powershell
+dotnet run --project desktop\TaskManager.Desktop.csproj
+```
+
+Run the Flutter mobile client:
+
+```powershell
+cd mobile
+flutter pub get
+flutter run
+```
+
+For Android Emulator networking, the default API base URL is `http://10.0.2.2:8000`. Use the host's reachable address when running on a physical device.
+
+## Localization
+
+Arabic is the default UI language across Web, WPF, and Flutter. See [docs/localization.md](docs/localization.md) for how to maintain translations and RTL behavior.
+
 ## Current phase status
 
-The Laravel Web UI and API are configured for SQL Server LocalDB. WPF and Flutter use the API and do not connect to SQL Server directly.
+The Laravel Web UI and API use SQL Server LocalDB. WPF and Flutter communicate only through the Laravel API and do not connect to SQL Server directly.
 
 Run the backend feature tests from `backend/` with `php artisan test`. They use an in-memory SQLite test database; SQL Server connection, migrations, and HTTP API behavior have also been checked against LocalDB.
 

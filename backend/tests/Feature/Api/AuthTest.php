@@ -76,7 +76,10 @@ class AuthTest extends TestCase
         $this->postJson('/api/v1/login', [
             'email' => 'login@example.test',
             'password' => 'wrong-password',
-        ])->assertUnprocessable()->assertJsonValidationErrors('email');
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('email')
+            ->assertJsonPath('errors.email.0', 'بيانات تسجيل الدخول غير صحيحة.');
     }
 
     public function test_logout_revokes_the_current_token(): void
@@ -100,5 +103,10 @@ class AuthTest extends TestCase
     public function test_profile_requires_authentication(): void
     {
         $this->get('/api/v1/me')->assertUnauthorized()->assertJson(['message' => 'Unauthenticated.']);
+    }
+
+    public function test_arabic_is_the_default_application_locale(): void
+    {
+        $this->assertSame('ar', app()->getLocale());
     }
 }

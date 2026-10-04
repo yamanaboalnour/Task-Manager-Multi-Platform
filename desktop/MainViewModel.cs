@@ -17,7 +17,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private string _email = string.Empty;
     private string _password = string.Empty;
     private string _errorMessage = string.Empty;
-    private string _statusMessage = "Sign in with your API account.";
+    private string _statusMessage = Properties.Strings.SignInWithApi;
     private string _userName = string.Empty;
     private string _token = string.Empty;
     private string _editorTitle = string.Empty;
@@ -82,9 +82,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
         private set => SetField(ref _statusMessage, value);
     }
 
-    public string WelcomeMessage => $"Signed in as {_userName}";
+    public string WelcomeMessage => string.Format(Properties.Strings.WelcomeMessage, _userName);
 
-    public string EditorHeading => IsCreating ? "New task" : "Task details";
+    public string EditorHeading => IsCreating ? Properties.Strings.NewTask : Properties.Strings.TaskDetails;
+    public string ToggleCompletionLabel => SelectedTask?.IsCompleted == true
+        ? Properties.Strings.MarkPending
+        : Properties.Strings.MarkComplete;
 
     public string EditorTitle
     {
@@ -109,6 +112,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 EditorTitle = value?.Title ?? string.Empty;
                 EditorDescription = value?.Description ?? string.Empty;
                 OnPropertyChanged(nameof(EditorHeading));
+                OnPropertyChanged(nameof(ToggleCompletionLabel));
                 RaiseCommandStates();
             }
         }
@@ -155,7 +159,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         ErrorMessage = string.Empty;
         if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password))
         {
-            ErrorMessage = "Enter both your email and password.";
+            ErrorMessage = Properties.Strings.CredentialsRequired;
             return;
         }
 
@@ -168,7 +172,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(WelcomeMessage));
             Password = string.Empty;
             IsAuthenticated = true;
-            StatusMessage = "Loading your tasks…";
+            StatusMessage = Properties.Strings.LoadingTasks;
             await LoadTasksCoreAsync();
         });
     }
@@ -181,11 +185,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
             try
             {
                 await _api.LogoutAsync(ApiBaseUrl, _token);
-                StatusMessage = "You have signed out.";
+                StatusMessage = Properties.Strings.SignedOut;
             }
             catch (Exception exception)
             {
-                ErrorMessage = $"Signed out locally, but the API could not revoke the token: {GetError(exception)}";
+                ErrorMessage = string.Format(Properties.Strings.LogoutApiError, GetError(exception));
             }
             finally
             {
@@ -213,7 +217,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
             SelectedTask = null;
             IsCreating = false;
-            StatusMessage = tasks.Count == 1 ? "1 task" : $"{tasks.Count} tasks";
+            StatusMessage = string.Format(Properties.Strings.TaskCount, tasks.Count);
         }
         catch (Exception exception)
         {
@@ -237,13 +241,13 @@ public sealed class MainViewModel : INotifyPropertyChanged
         var title = EditorTitle.Trim();
         if (title.Length == 0)
         {
-            ErrorMessage = "A task title is required.";
+            ErrorMessage = Properties.Strings.TitleRequired;
             return;
         }
 
         if (title.Length > 255 || EditorDescription.Length > 5000)
         {
-            ErrorMessage = "Titles can be at most 255 characters and descriptions at most 5000 characters.";
+            ErrorMessage = Properties.Strings.TaskLengthLimit;
             return;
         }
 
@@ -271,7 +275,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
                 SelectedTask = task;
                 IsCreating = false;
-                StatusMessage = "Task saved.";
+                StatusMessage = Properties.Strings.TaskSaved;
             }
             catch (Exception exception)
             {
@@ -294,7 +298,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
             {
                 SelectedTask.IsCompleted = (await _api.ToggleCompletionAsync(
                     ApiBaseUrl, _token, SelectedTask.Id)).IsCompleted;
-                StatusMessage = SelectedTask.IsCompleted ? "Task completed." : "Task marked active.";
+                StatusMessage = SelectedTask.IsCompleted ? Properties.Strings.TaskCompleted : Properties.Strings.TaskMarkedPending;
+                OnPropertyChanged(nameof(ToggleCompletionLabel));
             }
             catch (Exception exception)
             {
@@ -320,7 +325,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 SelectedTask = null;
                 EditorTitle = string.Empty;
                 EditorDescription = string.Empty;
-                StatusMessage = "Task deleted.";
+                StatusMessage = Properties.Strings.TaskDeleted;
             }
             catch (Exception exception)
             {
@@ -357,7 +362,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         if (exception is ApiException { StatusCode: HttpStatusCode.Unauthorized } && IsAuthenticated)
         {
             ClearSession();
-            StatusMessage = "Your session expired. Please sign in again.";
+            StatusMessage = Properties.Strings.SessionExpired;
         }
     }
 
@@ -376,10 +381,13 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private static string GetError(Exception exception) =>
         exception switch
         {
+            ApiException { StatusCode: HttpStatusCode.Unauthorized } => Properties.Strings.SessionExpired,
+            ApiException { StatusCode: HttpStatusCode.Forbidden } => Properties.Strings.PermissionDenied,
+            ApiException { StatusCode: HttpStatusCode.NotFound } => Properties.Strings.TaskNotFound,
             ApiException => exception.Message,
-            HttpRequestException => "Could not reach the API. Check the server and API base URL.",
-            TaskCanceledException => "The API request timed out.",
-            _ => exception.Message
+            HttpRequestException => Properties.Strings.ApiUnavailable,
+            TaskCanceledException => Properties.Strings.ApiTimedOut,
+            _ => Properties.Strings.UnexpectedError
         };
 
     private void RaiseCommandStates()

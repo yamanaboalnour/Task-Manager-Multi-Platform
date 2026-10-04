@@ -37,7 +37,7 @@ class TaskController extends Controller
     {
         $tasks->deleteFor($request->user(), $task);
 
-        return response()->json(['message' => 'Task deleted successfully.']);
+        return response()->json(['message' => __('Task deleted successfully.')]);
     }
 
     public function complete(Request $request, Task $task, TaskService $tasks)

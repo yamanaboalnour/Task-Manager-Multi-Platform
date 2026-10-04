@@ -16,7 +16,10 @@ class TaskTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        $this->get('/tasks')->assertOk()->assertSee('Add a task');
+        $this->get('/tasks')
+            ->assertOk()
+            ->assertSee('إضافة مهمة')
+            ->assertSee('dir="rtl"', false);
 
         $this->post('/tasks', [
             'title' => 'Original web task',
@@ -29,7 +32,9 @@ class TaskTest extends TestCase
         $this->get('/tasks')
             ->assertOk()
             ->assertSee('Original web task')
-            ->assertSee('Created from Blade');
+            ->assertSee('Created from Blade')
+            ->assertSee('قيد الإنجاز')
+            ->assertSee('تمت إضافة المهمة بنجاح.');
 
         $this->put("/tasks/{$task->id}", [
             'title' => 'Updated web task',
@@ -63,10 +68,11 @@ class TaskTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
 
-        $this->from('/tasks')
+        $this->followingRedirects()
+            ->from('/tasks')
             ->post('/tasks', ['title' => ''])
-            ->assertRedirect('/tasks')
-            ->assertSessionHasErrors('title');
+            ->assertOk()
+            ->assertSee('حقل العنوان مطلوب.');
 
         $task = Task::factory()->create(['user_id' => auth()->id()]);
 

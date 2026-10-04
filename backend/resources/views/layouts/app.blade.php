@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Task Manager') · Task Manager</title>
+    <title>@yield('title', __('Task Manager')) · {{ __('Task Manager') }}</title>
     <style>
-        :root { color-scheme: light; font-family: Inter, "Segoe UI", sans-serif; color: #18302a; background: #f3f6f3; }
+        :root { color-scheme: light; font-family: "Segoe UI", Tahoma, Arial, sans-serif; color: #18302a; background: #f3f6f3; }
         * { box-sizing: border-box; }
         body { margin: 0; min-height: 100vh; }
         a { color: #17664f; }
@@ -30,9 +30,9 @@
         .button-small { padding: .48rem .7rem; font-size: .9rem; }
         .full { width: 100%; margin-top: 1.25rem; }
         .errors { margin: 1rem 0; padding: .8rem 1rem; background: #fff2f0; border: 1px solid #f0c4bd; border-radius: 8px; color: #922b20; }
-        .errors ul { margin: .3rem 0 0; padding-left: 1.2rem; }
+        .errors ul { margin: .3rem 0 0; padding-inline-start: 1.2rem; }
         .notice { margin-bottom: 1rem; padding: .8rem 1rem; border: 1px solid #c5e4d0; border-radius: 8px; background: #effaf2; color: #205b39; }
-        .auth-footer { margin: 1.25rem 0 0; text-align: center; }
+        .auth-footer { margin-block-start: 1.25rem; text-align: center; }
         .page-heading { display: flex; justify-content: space-between; align-items: end; gap: 1rem; margin-bottom: 1.25rem; }
         .task-grid { display: grid; grid-template-columns: minmax(260px, .85fr) minmax(0, 1.4fr); gap: 1rem; align-items: start; }
         .task-list { display: grid; gap: .8rem; }
@@ -48,17 +48,17 @@
 </head>
 <body>
     <header class="topbar">
-        <a class="brand" href="{{ auth()->check() ? route('tasks.index') : route('login') }}">Task Manager</a>
-        <nav class="top-actions" aria-label="Main navigation">
+        <a class="brand" href="{{ auth()->check() ? route('tasks.index') : route('login') }}">{{ __('Task Manager') }}</a>
+        <nav class="top-actions" aria-label="{{ __('Main navigation') }}">
             @auth
                 <span class="muted">{{ auth()->user()->name }}</span>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button class="button-secondary" type="submit">Log out</button>
+                    <button class="button-secondary" type="submit">{{ __('Log out') }}</button>
                 </form>
             @else
-                <a href="{{ route('login') }}">Log in</a>
-                <a class="button button-small" href="{{ route('register') }}">Create account</a>
+                <a href="{{ route('login') }}">{{ __('Log in') }}</a>
+                <a class="button button-small" href="{{ route('register') }}">{{ __('Create account') }}</a>
             @endauth
         </nav>
     </header>

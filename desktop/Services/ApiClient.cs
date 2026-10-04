@@ -2,9 +2,11 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Net.Http;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using TaskManager.Desktop.Models;
+using TaskManager.Desktop.Properties;
 
 namespace TaskManager.Desktop.Services;
 
@@ -21,7 +23,7 @@ public sealed class ApiClient
         var response = await SendAsync<AuthResponse>(
             HttpMethod.Post, baseUrl, "login", null,
             new { email, password, device_name = "Task Manager Desktop" });
-        return response ?? throw new ApiException("The server returned an empty sign-in response.");
+        return response ?? throw new ApiException(Strings.EmptySignInResponse);
     }
 
     public async Task LogoutAsync(string baseUrl, string token) =>
@@ -35,7 +37,7 @@ public sealed class ApiClient
     {
         var task = await SendAsync<TaskItem>(
             HttpMethod.Post, baseUrl, "tasks", token, new { title, description });
-        return task ?? throw new ApiException("The server returned an empty task response.");
+        return task ?? throw new ApiException(Strings.EmptyTaskResponse);
     }
 
     public async Task<TaskItem> UpdateTaskAsync(
@@ -43,14 +45,14 @@ public sealed class ApiClient
     {
         var task = await SendAsync<TaskItem>(
             HttpMethod.Put, baseUrl, $"tasks/{id}", token, new { title, description });
-        return task ?? throw new ApiException("The server returned an empty task response.");
+        return task ?? throw new ApiException(Strings.EmptyTaskResponse);
     }
 
     public async Task<TaskItem> ToggleCompletionAsync(string baseUrl, string token, int id)
     {
         var task = await SendAsync<TaskItem>(
             HttpMethod.Patch, baseUrl, $"tasks/{id}/complete", token);
-        return task ?? throw new ApiException("The server returned an empty task response.");
+        return task ?? throw new ApiException(Strings.EmptyTaskResponse);
     }
 
     public async Task DeleteTaskAsync(string baseUrl, string token, int id) =>
@@ -94,7 +96,7 @@ public sealed class ApiClient
         if (!Uri.TryCreate(baseUrl?.Trim(), UriKind.Absolute, out var root)
             || (root.Scheme != Uri.UriSchemeHttp && root.Scheme != Uri.UriSchemeHttps))
         {
-            throw new ApiException("Enter a valid HTTP or HTTPS API base URL.");
+            throw new ApiException(Strings.InvalidApiUrl);
         }
 
         var path = root.AbsolutePath.TrimEnd('/');
@@ -113,11 +115,6 @@ public sealed class ApiClient
             using var document = JsonDocument.Parse(content);
             var root = document.RootElement;
             var messages = new List<string>();
-            if (root.TryGetProperty("message", out var message) && message.ValueKind == JsonValueKind.String)
-            {
-                messages.Add(message.GetString()!);
-            }
-
             if (root.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Object)
             {
                 foreach (var field in errors.EnumerateObject())
@@ -126,7 +123,7 @@ public sealed class ApiClient
                     {
                         messages.AddRange(field.Value.EnumerateArray()
                             .Where(value => value.ValueKind == JsonValueKind.String)
-                            .Select(value => $"{field.Name}: {value.GetString()}"));
+                            .Select(value => $"{GetFieldLabel(field.Name)}: {value.GetString()}"));
                     }
                 }
             }
@@ -135,13 +132,39 @@ public sealed class ApiClient
             {
                 return string.Join(Environment.NewLine, messages.Distinct());
             }
+
+            if (root.TryGetProperty("message", out var message) && message.ValueKind == JsonValueKind.String)
+            {
+                return message.GetString()!;
+            }
         }
         catch (JsonException)
         {
+            return string.Format(
+                CultureInfo.CurrentUICulture,
+                Strings.ApiRequestFailed,
+                (int)statusCode);
         }
 
-        return $"The API request failed (HTTP {(int)statusCode} {statusCode}).";
+        return string.Format(
+            CultureInfo.CurrentUICulture,
+            Strings.ApiRequestFailed,
+            (int)statusCode);
     }
+
+    private static string GetFieldLabel(string fieldName) =>
+        fieldName switch
+        {
+            "name" => Strings.Name,
+            "email" => Strings.Email,
+            "password" => Strings.Password,
+            "password_confirmation" => Strings.ConfirmPassword,
+            "title" => Strings.Title,
+            "description" => Strings.Description,
+            "device_name" => Strings.DeviceName,
+            "is_completed" => Strings.TaskStatus,
+            _ => Strings.Field
+        };
 
     public sealed class AuthResponse
     {

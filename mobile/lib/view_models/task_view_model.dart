@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../data/task_repository.dart';
+import '../l10n/generated/app_localizations_ar.dart';
 import '../models/task.dart';
 
 class TaskViewModel extends ChangeNotifier {
@@ -16,6 +17,7 @@ class TaskViewModel extends ChangeNotifier {
   String? error;
   Map<String, dynamic>? user;
   List<Task> tasks = const [];
+  static final _strings = AppLocalizationsAr();
 
   bool get isAuthenticated => _token != null;
 
@@ -34,7 +36,7 @@ class TaskViewModel extends ChangeNotifier {
       }
       error = exception.message;
     } catch (exception) {
-      error = exception.toString();
+      error = _strings.unexpectedError;
     } finally {
       initialized = true;
       notifyListeners();
@@ -53,7 +55,7 @@ class TaskViewModel extends ChangeNotifier {
       notifyListeners();
       return false;
     } catch (exception) {
-      error = exception.toString();
+      error = _strings.unexpectedError;
       notifyListeners();
       return false;
     }
@@ -82,9 +84,7 @@ class TaskViewModel extends ChangeNotifier {
       final token = response['token'];
       final responseUser = response['user'];
       if (token is! String || responseUser is! Map<String, dynamic>) {
-        throw const ApiException(
-          'The server returned an invalid sign-in response.',
-        );
+        throw ApiException(_strings.invalidSignInResponse);
       }
       await _repository.saveToken(token);
       _token = token;
@@ -95,7 +95,7 @@ class TaskViewModel extends ChangeNotifier {
       error = exception.message;
       return false;
     } catch (exception) {
-      error = exception.toString();
+      error = _strings.unexpectedError;
       return false;
     } finally {
       isWorking = false;
@@ -119,7 +119,7 @@ class TaskViewModel extends ChangeNotifier {
         user = null;
       }
     } catch (exception) {
-      error = exception.toString();
+      error = _strings.unexpectedError;
     } finally {
       isLoading = false;
       notifyListeners();
@@ -155,7 +155,7 @@ class TaskViewModel extends ChangeNotifier {
       error = exception.message;
       return false;
     } catch (exception) {
-      error = exception.toString();
+      error = _strings.unexpectedError;
       return false;
     } finally {
       isWorking = false;
@@ -172,7 +172,7 @@ class TaskViewModel extends ChangeNotifier {
     } on ApiException catch (exception) {
       error = exception.message;
     } catch (exception) {
-      error = exception.toString();
+      error = _strings.unexpectedError;
     }
     notifyListeners();
   }
@@ -187,7 +187,7 @@ class TaskViewModel extends ChangeNotifier {
     } on ApiException catch (exception) {
       error = exception.message;
     } catch (exception) {
-      error = exception.toString();
+      error = _strings.unexpectedError;
     }
     notifyListeners();
   }
@@ -199,12 +199,12 @@ class TaskViewModel extends ChangeNotifier {
     } on ApiException catch (exception) {
       error = exception.message;
     } catch (exception) {
-      error = exception.toString();
+      error = _strings.unexpectedError;
     } finally {
       try {
         await _repository.clearToken();
       } catch (exception) {
-        error = exception.toString();
+        error = _strings.localSessionClearFailed;
       }
       _token = null;
       user = null;

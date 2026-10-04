@@ -1,0 +1,86 @@
+{
+  "@@locale": "ar",
+  "appTitle": "إدارة المهام",
+  "loginTitle": "تسجيل الدخول",
+  "registerTitle": "إنشاء حساب",
+  "welcomeBack": "مرحبًا بعودتك",
+  "loginSubtitle": "سجّل الدخول لمتابعة مهامك.",
+  "registerSubtitle": "أنشئ حسابًا لمزامنة مهامك بين أجهزتك.",
+  "apiBaseUrl": "عنوان API الأساسي",
+  "apiBaseUrlHint": "https://your-server.example",
+  "apiBaseUrlHelp": "عنوان المحاكي على Android: http://10.0.2.2:8000",
+  "invalidApiUrl": "أدخل عنوانًا صالحًا يبدأ بـ http:// أو https://",
+  "name": "الاسم",
+  "nameRequired": "الاسم مطلوب.",
+  "email": "البريد الإلكتروني",
+  "emailRequired": "أدخل عنوان بريد إلكتروني صالحًا.",
+  "password": "كلمة المرور",
+  "passwordRequired": "كلمة المرور مطلوبة.",
+  "passwordMinLength": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.",
+  "confirmPassword": "تأكيد كلمة المرور",
+  "passwordsMismatch": "كلمتا المرور غير متطابقتين.",
+  "createAccount": "إنشاء حساب",
+  "signIn": "تسجيل الدخول",
+  "alreadyHaveAccount": "لديك حساب بالفعل؟ سجّل الدخول",
+  "newAccountPrompt": "مستخدم جديد؟ أنشئ حسابًا",
+  "myTasks": "مهامي",
+  "signOut": "تسجيل الخروج",
+  "signOutQuestion": "هل تريد تسجيل الخروج؟",
+  "signOutMessage": "ستبقى مهامك محفوظة في حسابك.",
+  "cancel": "إلغاء",
+  "newTask": "مهمة جديدة",
+  "helloUser": "مرحبًا، {name}",
+  "@helloUser": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteTaskQuestion": "حذف المهمة؟",
+  "deleteTaskConfirmation": "سيتم حذف «{title}» نهائيًا.",
+  "@deleteTaskConfirmation": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "delete": "حذف",
+  "taskActions": "إجراءات المهمة",
+  "edit": "تعديل",
+  "editTask": "تعديل المهمة",
+  "title": "العنوان",
+  "titleRequired": "عنوان المهمة مطلوب.",
+  "description": "الوصف",
+  "optionalDescription": "الوصف (اختياري)",
+  "save": "حفظ",
+  "completed": "مكتملة",
+  "pending": "قيد الإنجاز",
+  "markComplete": "تحديد كمكتملة",
+  "markPending": "إعادة إلى قيد الإنجاز",
+  "noTasks": "لا توجد مهام",
+  "noTasksHint": "أضف مهمة عندما ترغب في تذكّر شيء.",
+  "loading": "جارٍ التحميل...",
+  "retry": "إعادة المحاولة",
+  "taskSaveFailed": "تعذر حفظ المهمة.",
+  "sessionExpired": "انتهت صلاحية الجلسة. سجّل الدخول مجددًا.",
+  "requestFailed": "فشل الطلب (HTTP {statusCode}).",
+  "@requestFailed": {
+    "placeholders": {
+      "statusCode": {
+        "type": "int"
+      }
+    }
+  },
+  "networkError": "تعذر الاتصال بالخادم. تحقق من الشبكة وعنوان API.",
+  "unreadableResponse": "تعذر قراءة استجابة الخادم.",
+  "invalidServerResponse": "أعاد الخادم استجابة غير صالحة.",
+  "invalidUserResponse": "أعاد الخادم بيانات مستخدم غير صالحة.",
+  "invalidTaskListResponse": "أعاد الخادم قائمة مهام غير صالحة.",
+  "invalidSignInResponse": "أعاد الخادم استجابة تسجيل دخول غير صالحة.",
+  "unexpectedError": "حدث خطأ غير متوقع. يرجى المحاولة مجددًا.",
+  "permissionDenied": "لا تملك صلاحية تنفيذ هذا الإجراء.",
+  "taskNotFound": "المهمة غير موجودة أو لم تعد متاحة.",
+  "localSessionClearFailed": "حدث خطأ أثناء حذف بيانات الجلسة المحلية."
+}
