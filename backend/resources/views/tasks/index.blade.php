@@ -5,7 +5,7 @@
 @section('content')
     <div class="page-heading">
         <div>
-            <h1>{{ __('My tasks') }}</h1>
+            <h1>{{ auth()->user()->isManager() ? __('All tasks') : __('My tasks') }}</h1>
             <p class="muted">{{ __('Manage your work from one shared account.') }}</p>
         </div>
         <span class="muted">{{ trans_choice('tasks.count', $tasks->count(), ['count' => $tasks->count()]) }}</span>
@@ -30,12 +30,28 @@
                 <input id="new-title" name="title" value="{{ old('title') }}" required maxlength="255">
                 <label for="new-description">{{ __('Description') }}</label>
                 <textarea id="new-description" name="description" maxlength="5000">{{ old('description') }}</textarea>
+                @if (auth()->user()->isManager())
+                    <label for="new-user">{{ __('Assigned user') }}</label>
+                    <select id="new-user" name="user_id" required>
+                        @foreach ($users as $user)
+                            <option value="{{ $user->id }}" @selected((string) old('user_id') === (string) $user->id)>
+                                {{ $user->name }} — {{ $user->email }}
+                            </option>
+                        @endforeach
+                    </select>
+                @endif
                 <button class="full" type="submit">{{ __('Add task') }}</button>
             </form>
         </section>
 
-        <section class="task-list" aria-label="{{ __('Your tasks') }}">
-            @forelse ($tasks as $task)
+        <section class="task-list" aria-label="{{ auth()->user()->isManager() ? __('All tasks') : __('Your tasks') }}">
+            @forelse ($tasks->groupBy('user_id') as $ownerTasks)
+                @if (auth()->user()->isManager())
+                    <div class="panel user-section">
+                        <h2>{{ $ownerTasks->first()->user->name }} <span class="muted">({{ $ownerTasks->first()->user->email }})</span></h2>
+                    </div>
+                @endif
+                @foreach ($ownerTasks as $task)
                 <article class="task-card">
                     <div class="task-meta">
                         <span>{{ $task->is_completed ? __('Completed') : __('Active') }}</span>
@@ -67,8 +83,9 @@
                         </form>
                     </div>
                 </article>
+                @endforeach
             @empty
-                <div class="panel empty">{{ __('You do not have any tasks yet. Add one using the form.') }}</div>
+                <div class="panel empty">{{ auth()->user()->isManager() ? __('No tasks found.') : __('You do not have any tasks yet. Add one using the form.') }}</div>
             @endforelse
         </section>
     </div>

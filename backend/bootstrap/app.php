@@ -1,9 +1,11 @@
 <?php
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,6 +18,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+        $exceptions->render(function (AuthorizationException|AccessDeniedHttpException $exception, Request $request) {
+            $message = __('You do not have permission to perform this action.');
+
+            return $request->is('api/*') || $request->expectsJson()
+                ? response()->json(['message' => $message], 403)
+                : response()->view('errors.403', ['message' => $message], 403);
+        });
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectUsersTo('/tasks');

@@ -14,7 +14,7 @@ class TaskPolicy
 
     public function view(User $user, Task $task): bool
     {
-        return $this->owns($user, $task);
+        return $user->isManager() || $this->owns($user, $task);
     }
 
     public function create(User $user): bool
@@ -24,22 +24,22 @@ class TaskPolicy
 
     public function update(User $user, Task $task): bool
     {
-        return $this->owns($user, $task);
+        return $user->isManager() || $this->owns($user, $task);
     }
 
     public function delete(User $user, Task $task): bool
     {
-        return $this->owns($user, $task);
+        return $user->isManager() || $this->owns($user, $task);
     }
 
     public function restore(User $user, Task $task): bool
     {
-        return $this->owns($user, $task);
+        return $user->isManager() || $this->owns($user, $task);
     }
 
     public function forceDelete(User $user, Task $task): bool
     {
-        return $this->owns($user, $task);
+        return $user->isManager() || $this->owns($user, $task);
     }
 
     private function owns(User $user, Task $task): bool

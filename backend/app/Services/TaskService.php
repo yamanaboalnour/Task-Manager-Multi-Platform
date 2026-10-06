@@ -16,7 +16,11 @@ class TaskService
     {
         Gate::forUser($user)->authorize('viewAny', Task::class);
 
-        return $user->tasks()->orderByDesc('updated_at')->get();
+        $query = $user->isManager()
+            ? Task::query()->with('user:id,name,email')
+            : $user->tasks();
+
+        return $query->orderByDesc('updated_at')->get();
     }
 
     /**
@@ -26,14 +30,21 @@ class TaskService
     {
         Gate::forUser($user)->authorize('create', Task::class);
 
-        return $user->tasks()->create($attributes);
+        $assignedUser = $user;
+        if ($user->isManager() && isset($attributes['user_id'])) {
+            $assignedUser = User::query()->findOrFail($attributes['user_id']);
+        }
+
+        unset($attributes['user_id']);
+
+        return $assignedUser->tasks()->create($attributes)->load('user:id,name,email');
     }
 
     public function showFor(User $user, Task $task): Task
     {
         Gate::forUser($user)->authorize('view', $task);
 
-        return $task;
+        return $task->load('user:id,name,email');
     }
 
     /**
@@ -44,7 +55,7 @@ class TaskService
         Gate::forUser($user)->authorize('update', $task);
         $task->update($attributes);
 
-        return $task;
+        return $task->load('user:id,name,email');
     }
 
     public function toggleCompletionFor(User $user, Task $task): Task
@@ -52,7 +63,7 @@ class TaskService
         Gate::forUser($user)->authorize('update', $task);
         $task->update(['is_completed' => ! $task->is_completed]);
 
-        return $task;
+        return $task->load('user:id,name,email');
     }
 
     public function deleteFor(User $user, Task $task): void

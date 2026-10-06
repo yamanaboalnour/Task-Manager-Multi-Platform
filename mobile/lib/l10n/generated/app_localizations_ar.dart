@@ -83,6 +83,57 @@ class AppLocalizationsAr extends AppLocalizations {
   String get myTasks => 'مهامي';
 
   @override
+  String get allTasks => 'جميع المهام';
+
+  @override
+  String get manager => 'مدير';
+
+  @override
+  String get worker => 'عامل';
+
+  @override
+  String get manageUsers => 'إدارة المستخدمين';
+
+  @override
+  String get users => 'المستخدمون';
+
+  @override
+  String get addUser => 'إضافة مستخدم';
+
+  @override
+  String get editUser => 'تعديل المستخدم';
+
+  @override
+  String get userRole => 'الدور';
+
+  @override
+  String get assignUser => 'إسناد إلى مستخدم';
+
+  @override
+  String get saveUser => 'حفظ المستخدم';
+
+  @override
+  String get newPasswordOptional => 'كلمة مرور جديدة (اختيارية)';
+
+  @override
+  String get userCreated => 'تم إنشاء المستخدم.';
+
+  @override
+  String get userUpdated => 'تم تعديل المستخدم.';
+
+  @override
+  String get userFieldsRequired => 'الاسم والبريد الإلكتروني مطلوبان.';
+
+  @override
+  String get userPasswordRequired => 'كلمة المرور مطلوبة وبحد أدنى 8 أحرف.';
+
+  @override
+  String get noUsers => 'لا يوجد مستخدمون.';
+
+  @override
+  String get invalidUserListResponse => 'أعاد الخادم قائمة مستخدمين غير صالحة.';
+
+  @override
   String get signOut => 'تسجيل الخروج';
 
   @override

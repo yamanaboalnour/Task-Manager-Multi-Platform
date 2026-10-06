@@ -56,6 +56,8 @@ Arabic (`ar`) is the default interface language. The Blade UI uses right-to-left
 
 The Laravel Blade Web UI is available at `/register`, `/login`, and `/tasks`. It uses Laravel sessions, CSRF protection, and the same shared authentication, validation, task service, and ownership policy as the API.
 
+All public registrations receive the `worker` role; role values submitted during registration are ignored. Managers can create and manage accounts through `/users` and see all tasks grouped by owner through `/tasks`. To bootstrap the first manager on an existing database, first create or identify the account, then run `php artisan users:make-manager <email>` from `backend/` in a trusted local/administrative shell. The command does not create an account or expose a public manager-registration path. Managers can promote/demote users in the application; the final manager cannot be demoted.
+
 Register and login are public. All other endpoints require a Sanctum bearer token:
 
 | Method | Endpoint | Purpose |
@@ -67,6 +69,10 @@ Register and login are public. All other endpoints require a Sanctum bearer toke
 | GET, POST | `/api/v1/tasks` | List or create the current user's tasks |
 | GET, PUT, DELETE | `/api/v1/tasks/{task}` | Read, update, or delete an owned task |
 | PATCH | `/api/v1/tasks/{task}/complete` | Toggle task completion |
+| GET, POST | `/api/v1/users` | Manager-only user listing and account creation |
+| GET, PUT, PATCH | `/api/v1/users/{user}` | Manager-only user details and account/role updates |
+
+New public registrations are workers. Task endpoints return only the authenticated worker's tasks; managers see all tasks and may assign newly created tasks to any user. Laravel Policies enforce task ownership and manager-only user administration regardless of client-side controls.
 
 ## Run the clients
 

@@ -22,11 +22,25 @@ public partial class MainWindow : Window
                     LoginPassword.Clear();
                 }
             }
+            else if (args.PropertyName == nameof(MainViewModel.UserEditorPassword)
+                     && string.IsNullOrEmpty(_viewModel.UserEditorPassword))
+            {
+                UserPassword.Clear();
+            }
+            else if (args.PropertyName == nameof(MainViewModel.SelectedUser))
+            {
+                UserPassword.Clear();
+            }
         };
     }
 
     private void LoginPassword_OnPasswordChanged(object sender, RoutedEventArgs e)
     {
         _viewModel.Password = LoginPassword.Password;
+    }
+
+    private void UserPassword_OnPasswordChanged(object sender, RoutedEventArgs e)
+    {
+        _viewModel.UserEditorPassword = UserPassword.Password;
     }
 }

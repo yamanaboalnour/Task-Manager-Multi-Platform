@@ -22,9 +22,18 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private string _token = string.Empty;
     private string _editorTitle = string.Empty;
     private string _editorDescription = string.Empty;
+    private string _userEditorName = string.Empty;
+    private string _userEditorEmail = string.Empty;
+    private string _userEditorPassword = string.Empty;
     private TaskItem? _selectedTask;
+    private UserItem? _selectedUser;
+    private int? _selectedTaskOwnerId;
     private bool _isAuthenticated;
+    private bool _isManager;
     private bool _isCreating;
+    private bool _isCreatingUser;
+    private bool _isUserManagement;
+    private bool _userEditorIsManager;
     private bool _isBusy;
 
     public MainViewModel()
@@ -39,11 +48,16 @@ public sealed class MainViewModel : INotifyPropertyChanged
             () => !IsBusy && IsAuthenticated && SelectedTask is not null);
         DeleteTaskCommand = new AsyncCommand(DeleteTaskAsync,
             () => !IsBusy && IsAuthenticated && SelectedTask is not null);
+        ManageUsersCommand = new AsyncCommand(ShowUsersAsync, () => !IsBusy && IsManager);
+        ShowTasksCommand = new AsyncCommand(ShowTasksAsync, () => !IsBusy && IsAuthenticated);
+        NewUserCommand = new AsyncCommand(NewUserAsync, () => !IsBusy && IsManager);
+        SaveUserCommand = new AsyncCommand(SaveUserAsync, () => !IsBusy && IsManager);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ObservableCollection<TaskItem> Tasks { get; } = [];
+    public ObservableCollection<UserItem> Users { get; } = [];
     public AsyncCommand LoginCommand { get; }
     public AsyncCommand LogoutCommand { get; }
     public AsyncCommand RefreshCommand { get; }
@@ -51,6 +65,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public AsyncCommand SaveTaskCommand { get; }
     public AsyncCommand ToggleCompletionCommand { get; }
     public AsyncCommand DeleteTaskCommand { get; }
+    public AsyncCommand ManageUsersCommand { get; }
+    public AsyncCommand ShowTasksCommand { get; }
+    public AsyncCommand NewUserCommand { get; }
+    public AsyncCommand SaveUserCommand { get; }
 
     public string ApiBaseUrl
     {
@@ -82,9 +100,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
         private set => SetField(ref _statusMessage, value);
     }
 
-    public string WelcomeMessage => string.Format(Properties.Strings.WelcomeMessage, _userName);
+    public string WelcomeMessage => string.Format(
+        Properties.Strings.WelcomeMessage,
+        _userName,
+        IsManager ? Properties.Strings.Manager : Properties.Strings.Worker);
 
     public string EditorHeading => IsCreating ? Properties.Strings.NewTask : Properties.Strings.TaskDetails;
+    public string UserEditorHeading => IsCreatingUser ? Properties.Strings.AddUser : Properties.Strings.UserDetails;
+    public bool IsTaskManagement => !IsUserManagement;
     public string ToggleCompletionLabel => SelectedTask?.IsCompleted == true
         ? Properties.Strings.MarkPending
         : Properties.Strings.MarkComplete;
@@ -101,6 +124,53 @@ public sealed class MainViewModel : INotifyPropertyChanged
         set => SetField(ref _editorDescription, value);
     }
 
+    public string UserEditorName
+    {
+        get => _userEditorName;
+        set => SetField(ref _userEditorName, value);
+    }
+
+    public string UserEditorEmail
+    {
+        get => _userEditorEmail;
+        set => SetField(ref _userEditorEmail, value);
+    }
+
+    public string UserEditorPassword
+    {
+        get => _userEditorPassword;
+        set => SetField(ref _userEditorPassword, value);
+    }
+
+    public bool UserEditorIsManager
+    {
+        get => _userEditorIsManager;
+        set => SetField(ref _userEditorIsManager, value);
+    }
+
+    public int? SelectedTaskOwnerId
+    {
+        get => _selectedTaskOwnerId;
+        set => SetField(ref _selectedTaskOwnerId, value);
+    }
+
+    public UserItem? SelectedUser
+    {
+        get => _selectedUser;
+        set
+        {
+            if (SetField(ref _selectedUser, value))
+            {
+                _isCreatingUser = false;
+                UserEditorName = value?.Name ?? string.Empty;
+                UserEditorEmail = value?.Email ?? string.Empty;
+                UserEditorPassword = string.Empty;
+                UserEditorIsManager = value?.Role == "manager";
+                OnPropertyChanged(nameof(UserEditorHeading));
+            }
+        }
+    }
+
     public TaskItem? SelectedTask
     {
         get => _selectedTask;
@@ -111,6 +181,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 _isCreating = false;
                 EditorTitle = value?.Title ?? string.Empty;
                 EditorDescription = value?.Description ?? string.Empty;
+                if (IsManager && value is not null)
+                {
+                    SelectedTaskOwnerId = value.UserId;
+                }
                 OnPropertyChanged(nameof(EditorHeading));
                 OnPropertyChanged(nameof(ToggleCompletionLabel));
                 RaiseCommandStates();
@@ -126,6 +200,31 @@ public sealed class MainViewModel : INotifyPropertyChanged
             if (SetField(ref _isAuthenticated, value))
             {
                 RaiseCommandStates();
+            }
+        }
+    }
+
+    public bool IsManager
+    {
+        get => _isManager;
+        private set
+        {
+            if (SetField(ref _isManager, value))
+            {
+                OnPropertyChanged(nameof(WelcomeMessage));
+                RaiseCommandStates();
+            }
+        }
+    }
+
+    public bool IsUserManagement
+    {
+        get => _isUserManagement;
+        private set
+        {
+            if (SetField(ref _isUserManagement, value))
+            {
+                OnPropertyChanged(nameof(IsTaskManagement));
             }
         }
     }
@@ -154,6 +253,18 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    private bool IsCreatingUser
+    {
+        get => _isCreatingUser;
+        set
+        {
+            if (SetField(ref _isCreatingUser, value))
+            {
+                OnPropertyChanged(nameof(UserEditorHeading));
+            }
+        }
+    }
+
     private async Task LoginAsync()
     {
         ErrorMessage = string.Empty;
@@ -169,11 +280,16 @@ public sealed class MainViewModel : INotifyPropertyChanged
             var result = await _api.LoginAsync(ApiBaseUrl, Email.Trim(), Password);
             _token = result.Token;
             _userName = string.IsNullOrWhiteSpace(result.User.Name) ? Email.Trim() : result.User.Name;
+            IsManager = result.User.Role == "manager";
             OnPropertyChanged(nameof(WelcomeMessage));
             Password = string.Empty;
             IsAuthenticated = true;
             StatusMessage = Properties.Strings.LoadingTasks;
             await LoadTasksCoreAsync();
+            if (IsManager)
+            {
+                await LoadUsersCoreAsync();
+            }
         });
     }
 
@@ -218,6 +334,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
             SelectedTask = null;
             IsCreating = false;
             StatusMessage = string.Format(Properties.Strings.TaskCount, tasks.Count);
+            if (IsManager && Users.Count > 0 && SelectedTaskOwnerId is null)
+            {
+                SelectedTaskOwnerId = Users[0].Id;
+            }
         }
         catch (Exception exception)
         {
@@ -232,6 +352,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
         SelectedTask = null;
         EditorTitle = string.Empty;
         EditorDescription = string.Empty;
+        if (IsManager)
+        {
+            SelectedTaskOwnerId = Users.FirstOrDefault()?.Id;
+        }
         return Task.CompletedTask;
     }
 
@@ -257,7 +381,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
             try
             {
                 var task = IsCreating || SelectedTask is null
-                    ? await _api.CreateTaskAsync(ApiBaseUrl, _token, title, description)
+                    ? await _api.CreateTaskAsync(
+                        ApiBaseUrl,
+                        _token,
+                        title,
+                        description,
+                        IsManager ? SelectedTaskOwnerId : null)
                     : await _api.UpdateTaskAsync(ApiBaseUrl, _token, SelectedTask.Id, title, description);
 
                 var existing = Tasks.FirstOrDefault(item => item.Id == task.Id);
@@ -334,6 +463,111 @@ public sealed class MainViewModel : INotifyPropertyChanged
         });
     }
 
+    private async Task ShowUsersAsync()
+    {
+        ErrorMessage = string.Empty;
+        IsUserManagement = true;
+        await RunBusyAsync(LoadUsersCoreAsync);
+    }
+
+    private async Task ShowTasksAsync()
+    {
+        ErrorMessage = string.Empty;
+        IsUserManagement = false;
+        await LoadTasksAsync();
+    }
+
+    private async Task LoadUsersCoreAsync()
+    {
+        if (!IsManager)
+        {
+            return;
+        }
+
+        try
+        {
+            var users = await _api.GetUsersAsync(ApiBaseUrl, _token);
+            Users.Clear();
+            foreach (var user in users)
+            {
+                Users.Add(user);
+            }
+
+            if (SelectedTaskOwnerId is null || Users.All(user => user.Id != SelectedTaskOwnerId))
+            {
+                SelectedTaskOwnerId = Users.FirstOrDefault()?.Id;
+            }
+
+            StatusMessage = string.Format(Properties.Strings.UserCount, Users.Count);
+        }
+        catch (Exception exception)
+        {
+            HandleError(exception);
+        }
+    }
+
+    private Task NewUserAsync()
+    {
+        ErrorMessage = string.Empty;
+        IsCreatingUser = true;
+        SelectedUser = null;
+        UserEditorName = string.Empty;
+        UserEditorEmail = string.Empty;
+        UserEditorPassword = string.Empty;
+        UserEditorIsManager = false;
+        return Task.CompletedTask;
+    }
+
+    private async Task SaveUserAsync()
+    {
+        ErrorMessage = string.Empty;
+        if (string.IsNullOrWhiteSpace(UserEditorName) || string.IsNullOrWhiteSpace(UserEditorEmail))
+        {
+            ErrorMessage = Properties.Strings.UserFieldsRequired;
+            return;
+        }
+
+        if ((SelectedUser is null || !string.IsNullOrWhiteSpace(UserEditorPassword))
+            && UserEditorPassword.Length < 8)
+        {
+            ErrorMessage = Properties.Strings.UserPasswordRequired;
+            return;
+        }
+
+        await RunBusyAsync(async () =>
+        {
+            try
+            {
+                var editing = SelectedUser is not null;
+                var user = editing
+                    ? await _api.UpdateUserAsync(
+                        ApiBaseUrl,
+                        _token,
+                        SelectedUser!.Id,
+                        UserEditorName.Trim(),
+                        UserEditorEmail.Trim(),
+                        UserEditorPassword,
+                        UserEditorIsManager ? "manager" : "worker")
+                    : await _api.CreateUserAsync(
+                        ApiBaseUrl,
+                        _token,
+                        UserEditorName.Trim(),
+                        UserEditorEmail.Trim(),
+                        UserEditorPassword,
+                        UserEditorIsManager ? "manager" : "worker");
+
+                await LoadUsersCoreAsync();
+                SelectedUser = Users.FirstOrDefault(item => item.Id == user.Id);
+                UserEditorPassword = string.Empty;
+                StatusMessage = editing ? Properties.Strings.UserSaved : Properties.Strings.UserCreated;
+            }
+            catch (Exception exception)
+            {
+                HandleError(exception);
+            }
+        });
+    }
+
     private async Task RunBusyAsync(Func<Task> operation)
     {
         if (IsBusy)
@@ -371,8 +605,17 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _token = string.Empty;
         _userName = string.Empty;
         Tasks.Clear();
+        Users.Clear();
+        UserEditorName = string.Empty;
+        UserEditorEmail = string.Empty;
+        UserEditorPassword = string.Empty;
         SelectedTask = null;
+        SelectedUser = null;
         IsCreating = false;
+        IsCreatingUser = false;
+        IsManager = false;
+        IsUserManagement = false;
+        SelectedTaskOwnerId = null;
         IsAuthenticated = false;
         OnPropertyChanged(nameof(WelcomeMessage));
         RaiseCommandStates();
@@ -399,6 +642,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
         SaveTaskCommand?.NotifyCanExecuteChanged();
         ToggleCompletionCommand?.NotifyCanExecuteChanged();
         DeleteTaskCommand?.NotifyCanExecuteChanged();
+        ManageUsersCommand?.NotifyCanExecuteChanged();
+        ShowTasksCommand?.NotifyCanExecuteChanged();
+        NewUserCommand?.NotifyCanExecuteChanged();
+        SaveUserCommand?.NotifyCanExecuteChanged();
     }
 
     private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)

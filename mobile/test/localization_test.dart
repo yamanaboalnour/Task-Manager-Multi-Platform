@@ -52,24 +52,116 @@ void main() {
 
     expect(find.text('الاسم مطلوب.'), findsOneWidget);
   });
+
+  testWidgets('manager sees all tasks and can open account management', (
+    tester,
+  ) async {
+    final repository = _FakeTaskRepository(
+      token: 'manager-token',
+      authenticatedUser: {'id': 1, 'name': 'Manager', 'role': 'manager'},
+    );
+    final viewModel = TaskViewModel(repository);
+    await tester.pumpWidget(TaskManagerApp(viewModel: viewModel));
+    await tester.pumpAndSettle();
+
+    expect(find.text('جميع المهام'), findsOneWidget);
+    expect(find.text('مدير'), findsOneWidget);
+    expect(find.byTooltip('إدارة المستخدمين'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('إدارة المستخدمين'));
+    await tester.pumpAndSettle();
+    expect(find.text('إدارة المستخدمين'), findsOneWidget);
+  });
+
+  testWidgets('worker has no user-management navigation', (tester) async {
+    final viewModel = TaskViewModel(
+      _FakeTaskRepository(
+        token: 'worker-token',
+        authenticatedUser: {'id': 2, 'name': 'Worker', 'role': 'worker'},
+      ),
+    );
+    await tester.pumpWidget(TaskManagerApp(viewModel: viewModel));
+    await tester.pumpAndSettle();
+
+    expect(find.text('مهامي'), findsOneWidget);
+    expect(find.byTooltip('إدارة المستخدمين'), findsNothing);
+  });
+
+  testWidgets(
+    'expired API token clears the local session and returns to login',
+    (tester) async {
+      final repository = _FakeTaskRepository(
+        token: 'expired-token',
+        authenticatedUser: {'id': 2, 'name': 'Worker', 'role': 'worker'},
+        taskStatusCode: 401,
+      );
+      final viewModel = TaskViewModel(repository);
+      await tester.pumpWidget(TaskManagerApp(viewModel: viewModel));
+      await tester.pumpAndSettle();
+
+      expect(repository.tokenCleared, isTrue);
+      expect(viewModel.isAuthenticated, isFalse);
+      expect(find.text('مرحبًا بعودتك'), findsOneWidget);
+    },
+  );
 }
 
 class _FakeTaskRepository implements TaskRepository {
+  _FakeTaskRepository({
+    this.token,
+    this.authenticatedUser = const <String, dynamic>{},
+    this.taskStatusCode,
+  });
+
+  final String? token;
+  final Map<String, dynamic> authenticatedUser;
+  final int? taskStatusCode;
+  bool tokenCleared = false;
+
   @override
-  Future<void> clearToken() async {}
+  Future<void> clearToken() async {
+    tokenCleared = true;
+  }
 
   @override
   Future<Map<String, dynamic>> currentUser(String token) async =>
-      <String, dynamic>{};
+      authenticatedUser;
 
   @override
-  Future<List<Task>> getTasks(String token) async => <Task>[];
+  Future<List<Task>> getTasks(String token) async {
+    if (taskStatusCode != null) {
+      throw ApiException('session expired', statusCode: taskStatusCode);
+    }
+    return <Task>[];
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getUsers(String token) async => [];
+
+  @override
+  Future<Map<String, dynamic>> createUser(
+    String token, {
+    required String name,
+    required String email,
+    required String password,
+    required String role,
+  }) async => <String, dynamic>{};
+
+  @override
+  Future<Map<String, dynamic>> updateUser(
+    String token,
+    int id, {
+    required String name,
+    required String email,
+    required String? password,
+    required String role,
+  }) async => <String, dynamic>{};
 
   @override
   Future<String?> readApiBaseUrl() async => 'http://10.0.2.2:8000';
 
   @override
-  Future<String?> readToken() async => null;
+  Future<String?> readToken() async => token;
 
   @override
   Future<void> saveApiBaseUrl(String value) async {}
@@ -88,6 +180,7 @@ class _FakeTaskRepository implements TaskRepository {
     String token, {
     required String title,
     required String description,
+    int? userId,
   }) async => throw UnimplementedError();
 
   @override

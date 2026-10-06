@@ -348,6 +348,16 @@ class TaskListScreen extends StatelessWidget {
     if (shouldLogout == true) await viewModel.logout();
   }
 
+  Future<void> _openUsers(BuildContext context) async {
+    await viewModel.loadUsers();
+    if (!context.mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => UserManagementScreen(viewModel: viewModel),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -358,10 +368,16 @@ class TaskListScreen extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             title: Text(
-              strings.myTasks,
+              vm.isManager ? strings.allTasks : strings.myTasks,
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
             actions: [
+              if (vm.isManager)
+                IconButton(
+                  tooltip: strings.manageUsers,
+                  onPressed: () => _openUsers(context),
+                  icon: const Icon(Icons.people_alt_outlined),
+                ),
               IconButton(
                 tooltip: strings.signOut,
                 onPressed: () => _logout(context),
@@ -385,6 +401,14 @@ class TaskListScreen extends StatelessWidget {
                       strings.helloUser(vm.user!['name'] as String),
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
+                  ),
+                ),
+              if (vm.user?['role'] is String)
+                Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(20, 0, 20, 12),
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Text(vm.isManager ? strings.manager : strings.worker),
                   ),
                 ),
               if (vm.error != null)
@@ -479,6 +503,11 @@ class _TaskCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (task.userName?.isNotEmpty == true)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Text(task.userName!),
+                        ),
                       Text(
                         task.title,
                         style: titleStyle?.copyWith(
@@ -537,6 +566,16 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
   );
   bool _saving = false;
   String? _error;
+  int? _selectedUserId;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedUserId = widget.task?.userId ??
+        (widget.viewModel.users.isNotEmpty
+            ? int.tryParse('${widget.viewModel.users.first['id']}')
+            : null);
+  }
 
   @override
   void dispose() {
@@ -555,6 +594,9 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
       id: widget.task?.id,
       title: _title.text.trim(),
       description: _description.text.trim(),
+      userId: widget.task == null && widget.viewModel.isManager
+          ? _selectedUserId
+          : null,
     );
     if (!mounted) return;
     if (succeeded) {
@@ -589,6 +631,21 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
                     ? strings.titleRequired
                     : null,
               ),
+              if (widget.viewModel.isManager && widget.task == null) ...[
+                const SizedBox(height: 12),
+                DropdownButtonFormField<int>(
+                  initialValue: _selectedUserId,
+                  decoration: InputDecoration(labelText: strings.assignUser),
+                  items: widget.viewModel.users.map((user) {
+                    final id = int.parse('${user['id']}');
+                    return DropdownMenuItem(
+                      value: id,
+                      child: Text('${user['name']} · ${user['email']}'),
+                    );
+                  }).toList(),
+                  onChanged: (value) => setState(() => _selectedUserId = value),
+                ),
+              ],
               const SizedBox(height: 12),
               TextFormField(
                 controller: _description,
@@ -622,6 +679,242 @@ class _TaskEditorDialogState extends State<TaskEditorDialog> {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : Text(strings.save),
+        ),
+      ],
+    );
+  }
+}
+
+class UserManagementScreen extends StatelessWidget {
+  const UserManagementScreen({required this.viewModel, super.key});
+
+  final TaskViewModel viewModel;
+
+  Future<void> _editUser(BuildContext context, [Map<String, dynamic>? user]) async {
+    await showDialog<void>(
+      context: context,
+      builder: (_) => UserEditorDialog(viewModel: viewModel, user: user),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context)!;
+    return ListenableBuilder(
+      listenable: viewModel,
+      builder: (context, _) => Scaffold(
+        appBar: AppBar(title: Text(strings.manageUsers)),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => _editUser(context),
+          icon: const Icon(Icons.person_add_alt_1),
+          label: Text(strings.addUser),
+        ),
+        body: Column(
+          children: [
+            if (viewModel.error != null)
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: _ErrorMessage(
+                  message: viewModel.error!,
+                  onRetry: viewModel.loadUsers,
+                ),
+              ),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: viewModel.loadUsers,
+                child: viewModel.users.isEmpty
+                    ? ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: [
+                          SizedBox(
+                            height: MediaQuery.sizeOf(context).height * .5,
+                            child: Center(child: Text(strings.noUsers)),
+                          ),
+                        ],
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                          16,
+                          12,
+                          16,
+                          100,
+                        ),
+                        itemCount: viewModel.users.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 8),
+                        itemBuilder: (context, index) {
+                          final user = viewModel.users[index];
+                          final role = user['role'] == 'manager'
+                              ? strings.manager
+                              : strings.worker;
+                          return Card(
+                            child: ListTile(
+                              title: Text('${user['name']}'),
+                              subtitle: Text(
+                                '${user['email']} · $role · ${user['tasks_count'] ?? 0}',
+                                textDirection: TextDirection.rtl,
+                              ),
+                              leading: const Icon(Icons.person_outline),
+                              trailing: const Icon(Icons.edit_outlined),
+                              onTap: () => _editUser(context, user),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class UserEditorDialog extends StatefulWidget {
+  const UserEditorDialog({required this.viewModel, this.user, super.key});
+
+  final TaskViewModel viewModel;
+  final Map<String, dynamic>? user;
+
+  @override
+  State<UserEditorDialog> createState() => _UserEditorDialogState();
+}
+
+class _UserEditorDialogState extends State<UserEditorDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final _name = TextEditingController(
+    text: widget.user?['name'] as String? ?? '',
+  );
+  late final _email = TextEditingController(
+    text: widget.user?['email'] as String? ?? '',
+  );
+  final _password = TextEditingController();
+  late String _role = widget.user?['role'] as String? ?? 'worker';
+  bool _saving = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _email.dispose();
+    _password.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final strings = AppLocalizations.of(context)!;
+    if (!_formKey.currentState!.validate()) return;
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    final success = await widget.viewModel.saveUser(
+      id: widget.user == null ? null : int.parse('${widget.user!['id']}'),
+      name: _name.text.trim(),
+      email: _email.text.trim(),
+      role: _role,
+      password: _password.text.isEmpty ? null : _password.text,
+    );
+    if (!mounted) return;
+    if (success) {
+      Navigator.pop(context);
+    } else {
+      setState(() {
+        _saving = false;
+        _error = widget.viewModel.error ?? strings.unexpectedError;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context)!;
+    return AlertDialog(
+      title: Text(widget.user == null ? strings.addUser : strings.editUser),
+      content: SizedBox(
+        width: 440,
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: _name,
+                  decoration: InputDecoration(labelText: strings.name),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? strings.userFieldsRequired
+                      : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _email,
+                  keyboardType: TextInputType.emailAddress,
+                  textDirection: TextDirection.ltr,
+                  textAlign: TextAlign.left,
+                  decoration: InputDecoration(labelText: strings.email),
+                  validator: (value) => value == null || !value.contains('@')
+                      ? strings.emailRequired
+                      : null,
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: _role,
+                  decoration: InputDecoration(labelText: strings.userRole),
+                  items: [
+                    DropdownMenuItem(
+                      value: 'worker',
+                      child: Text(strings.worker),
+                    ),
+                    DropdownMenuItem(
+                      value: 'manager',
+                      child: Text(strings.manager),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) setState(() => _role = value);
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _password,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: widget.user == null
+                        ? strings.password
+                        : strings.newPasswordOptional,
+                  ),
+                  validator: (value) {
+                    if (widget.user == null && (value?.length ?? 0) < 8) {
+                      return strings.userPasswordRequired;
+                    }
+                    if (value != null && value.isNotEmpty && value.length < 8) {
+                      return strings.userPasswordRequired;
+                    }
+                    return null;
+                  },
+                ),
+                if (_error != null) ...[
+                  const SizedBox(height: 8),
+                  _ErrorMessage(message: _error!),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _saving ? null : () => Navigator.pop(context),
+          child: Text(strings.cancel),
+        ),
+        FilledButton(
+          onPressed: _saving ? null : _save,
+          child: _saving
+              ? const SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(strings.saveUser),
         ),
       ],
     );

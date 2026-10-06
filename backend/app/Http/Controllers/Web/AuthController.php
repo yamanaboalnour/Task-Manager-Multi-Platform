@@ -17,7 +17,7 @@ class AuthController extends Controller
     public function createRegistration(): View|RedirectResponse
     {
         return Auth::check()
-            ? redirect()->route('tasks.index')
+            ? redirect()->route(Auth::user()->isManager() ? 'dashboard' : 'tasks.index')
             : view('auth.register');
     }
 
@@ -28,13 +28,13 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('tasks.index');
+        return redirect()->route(Auth::user()->isManager() ? 'dashboard' : 'tasks.index');
     }
 
     public function createLogin(): View|RedirectResponse
     {
         return Auth::check()
-            ? redirect()->route('tasks.index')
+            ? redirect()->route(Auth::user()->isManager() ? 'dashboard' : 'tasks.index')
             : view('auth.login');
     }
 
@@ -51,7 +51,7 @@ class AuthController extends Controller
         Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
 
-        return redirect()->intended(route('tasks.index'));
+        return redirect()->intended(route(Auth::user()->isManager() ? 'dashboard' : 'tasks.index'));
     }
 
     public function logout(Request $request): RedirectResponse

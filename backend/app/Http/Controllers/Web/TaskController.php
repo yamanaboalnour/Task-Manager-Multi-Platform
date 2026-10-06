@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Task;
+use App\Models\User;
 use App\Services\TaskService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,6 +18,9 @@ class TaskController extends Controller
     {
         return view('tasks.index', [
             'tasks' => $tasks->listFor($request->user()),
+            'users' => $request->user()->isManager()
+                ? User::query()->select(['id', 'name', 'email'])->orderBy('name')->get()
+                : collect(),
         ]);
     }
 

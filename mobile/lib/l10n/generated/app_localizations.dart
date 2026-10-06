@@ -238,6 +238,108 @@ abstract class AppLocalizations {
   /// **'مهامي'**
   String get myTasks;
 
+  /// No description provided for @allTasks.
+  ///
+  /// In ar, this message translates to:
+  /// **'جميع المهام'**
+  String get allTasks;
+
+  /// No description provided for @manager.
+  ///
+  /// In ar, this message translates to:
+  /// **'مدير'**
+  String get manager;
+
+  /// No description provided for @worker.
+  ///
+  /// In ar, this message translates to:
+  /// **'عامل'**
+  String get worker;
+
+  /// No description provided for @manageUsers.
+  ///
+  /// In ar, this message translates to:
+  /// **'إدارة المستخدمين'**
+  String get manageUsers;
+
+  /// No description provided for @users.
+  ///
+  /// In ar, this message translates to:
+  /// **'المستخدمون'**
+  String get users;
+
+  /// No description provided for @addUser.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة مستخدم'**
+  String get addUser;
+
+  /// No description provided for @editUser.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل المستخدم'**
+  String get editUser;
+
+  /// No description provided for @userRole.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدور'**
+  String get userRole;
+
+  /// No description provided for @assignUser.
+  ///
+  /// In ar, this message translates to:
+  /// **'إسناد إلى مستخدم'**
+  String get assignUser;
+
+  /// No description provided for @saveUser.
+  ///
+  /// In ar, this message translates to:
+  /// **'حفظ المستخدم'**
+  String get saveUser;
+
+  /// No description provided for @newPasswordOptional.
+  ///
+  /// In ar, this message translates to:
+  /// **'كلمة مرور جديدة (اختيارية)'**
+  String get newPasswordOptional;
+
+  /// No description provided for @userCreated.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم إنشاء المستخدم.'**
+  String get userCreated;
+
+  /// No description provided for @userUpdated.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تعديل المستخدم.'**
+  String get userUpdated;
+
+  /// No description provided for @userFieldsRequired.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم والبريد الإلكتروني مطلوبان.'**
+  String get userFieldsRequired;
+
+  /// No description provided for @userPasswordRequired.
+  ///
+  /// In ar, this message translates to:
+  /// **'كلمة المرور مطلوبة وبحد أدنى 8 أحرف.'**
+  String get userPasswordRequired;
+
+  /// No description provided for @noUsers.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يوجد مستخدمون.'**
+  String get noUsers;
+
+  /// No description provided for @invalidUserListResponse.
+  ///
+  /// In ar, this message translates to:
+  /// **'أعاد الخادم قائمة مستخدمين غير صالحة.'**
+  String get invalidUserListResponse;
+
   /// No description provided for @signOut.
   ///
   /// In ar, this message translates to:

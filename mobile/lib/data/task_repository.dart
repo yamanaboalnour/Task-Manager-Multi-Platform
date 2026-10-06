@@ -29,10 +29,27 @@ abstract interface class TaskRepository {
   });
   Future<void> logout(String token);
   Future<List<Task>> getTasks(String token);
+  Future<List<Map<String, dynamic>>> getUsers(String token);
+  Future<Map<String, dynamic>> createUser(
+    String token, {
+    required String name,
+    required String email,
+    required String password,
+    required String role,
+  });
+  Future<Map<String, dynamic>> updateUser(
+    String token,
+    int id, {
+    required String name,
+    required String email,
+    required String? password,
+    required String role,
+  });
   Future<Task> createTask(
     String token, {
     required String title,
     required String description,
+    int? userId,
   });
   Future<Task> updateTask(
     String token,
@@ -212,16 +229,75 @@ class HttpTaskRepository implements TaskRepository {
   }
 
   @override
+  Future<List<Map<String, dynamic>>> getUsers(String token) async {
+    final response = await _request('GET', '/users', token: token);
+    if (response is! List) {
+      throw ApiException(AppLocalizationsAr().invalidUserListResponse);
+    }
+    return response.cast<Map<String, dynamic>>();
+  }
+
+  @override
+  Future<Map<String, dynamic>> createUser(
+    String token, {
+    required String name,
+    required String email,
+    required String password,
+    required String role,
+  }) async {
+    final response = await _request(
+      'POST',
+      '/users',
+      token: token,
+      body: {
+        'name': name,
+        'email': email,
+        'password': password,
+        'password_confirmation': password,
+        'role': role,
+      },
+    );
+    return response as Map<String, dynamic>;
+  }
+
+  @override
+  Future<Map<String, dynamic>> updateUser(
+    String token,
+    int id, {
+    required String name,
+    required String email,
+    required String? password,
+    required String role,
+  }) async {
+    final body = <String, Object?>{
+      'name': name,
+      'email': email,
+      'role': role,
+      if (password != null && password.isNotEmpty) ...{
+        'password': password,
+        'password_confirmation': password,
+      },
+    };
+    final response = await _request('PUT', '/users/$id', token: token, body: body);
+    return response as Map<String, dynamic>;
+  }
+
+  @override
   Future<Task> createTask(
     String token, {
     required String title,
     required String description,
+    int? userId,
   }) async {
     final response = await _request(
       'POST',
       '/tasks',
       token: token,
-      body: {'title': title, 'description': description},
+      body: {
+        'title': title,
+        'description': description,
+        'user_id': ?userId,
+      },
     );
     return Task.fromJson(response as Map<String, dynamic>);
   }

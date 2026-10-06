@@ -34,6 +34,13 @@
         .notice { margin-bottom: 1rem; padding: .8rem 1rem; border: 1px solid #c5e4d0; border-radius: 8px; background: #effaf2; color: #205b39; }
         .auth-footer { margin-block-start: 1.25rem; text-align: center; }
         .page-heading { display: flex; justify-content: space-between; align-items: end; gap: 1rem; margin-bottom: 1.25rem; }
+        .summary-grid, .user-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+        .summary-card { padding: 1.25rem; }
+        .user-section { margin-top: 1.25rem; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .75rem; align-items: end; }
+        .form-grid label { margin-top: .5rem; }
+        select { width: 100%; padding: .75rem .85rem; border: 1px solid #bfcfc5; border-radius: 8px; background: #fff; font: inherit; }
+        .user-heading { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .6rem; }
         .task-grid { display: grid; grid-template-columns: minmax(260px, .85fr) minmax(0, 1.4fr); gap: 1rem; align-items: start; }
         .task-list { display: grid; gap: .8rem; }
         .task-card { padding: 1rem; }
@@ -48,10 +55,18 @@
 </head>
 <body>
     <header class="topbar">
-        <a class="brand" href="{{ auth()->check() ? route('tasks.index') : route('login') }}">{{ __('Task Manager') }}</a>
+        <a class="brand" href="{{ auth()->check() ? (auth()->user()->isManager() ? route('dashboard') : route('tasks.index')) : route('login') }}">{{ __('Task Manager') }}</a>
         <nav class="top-actions" aria-label="{{ __('Main navigation') }}">
             @auth
                 <span class="muted">{{ auth()->user()->name }}</span>
+                <span class="muted">{{ auth()->user()->isManager() ? __('Manager') : __('Worker') }}</span>
+                @if (auth()->user()->isManager())
+                    <a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a>
+                    <a href="{{ route('users.index') }}">{{ __('User management') }}</a>
+                    <a href="{{ route('tasks.index') }}">{{ __('All tasks') }}</a>
+                @else
+                    <a href="{{ route('tasks.index') }}">{{ __('My tasks') }}</a>
+                @endif
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button class="button-secondary" type="submit">{{ __('Log out') }}</button>

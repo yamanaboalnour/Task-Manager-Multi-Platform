@@ -15,7 +15,8 @@ public sealed class ApiClient
     private static readonly HttpClient HttpClient = new() { Timeout = TimeSpan.FromSeconds(30) };
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
-        PropertyNameCaseInsensitive = true
+        PropertyNameCaseInsensitive = true,
+        NumberHandling = JsonNumberHandling.AllowReadingFromString
     };
 
     public async Task<AuthResponse> LoginAsync(string baseUrl, string email, string password)
@@ -33,10 +34,44 @@ public sealed class ApiClient
         await SendAsync<List<TaskItem>>(HttpMethod.Get, baseUrl, "tasks", token)
         ?? [];
 
-    public async Task<TaskItem> CreateTaskAsync(string baseUrl, string token, string title, string? description)
+    public async Task<IReadOnlyList<UserItem>> GetUsersAsync(string baseUrl, string token) =>
+        await SendAsync<List<UserItem>>(HttpMethod.Get, baseUrl, "users", token)
+        ?? [];
+
+    public async Task<UserItem> CreateUserAsync(
+        string baseUrl, string token, string name, string email, string password, string role)
     {
+        var user = await SendAsync<UserItem>(
+            HttpMethod.Post, baseUrl, "users", token,
+            new { name, email, password, password_confirmation = password, role });
+        return user ?? throw new ApiException(Strings.EmptyUserResponse);
+    }
+
+    public async Task<UserItem> UpdateUserAsync(
+        string baseUrl, string token, int id, string name, string email, string? password, string role)
+    {
+        var payload = new Dictionary<string, object?> { ["name"] = name, ["email"] = email, ["role"] = role };
+        if (!string.IsNullOrWhiteSpace(password))
+        {
+            payload["password"] = password;
+            payload["password_confirmation"] = password;
+        }
+
+        var user = await SendAsync<UserItem>(HttpMethod.Put, baseUrl, $"users/{id}", token, payload);
+        return user ?? throw new ApiException(Strings.EmptyUserResponse);
+    }
+
+    public async Task<TaskItem> CreateTaskAsync(
+        string baseUrl, string token, string title, string? description, int? userId)
+    {
+        var payload = new Dictionary<string, object?> { ["title"] = title, ["description"] = description };
+        if (userId.HasValue)
+        {
+            payload["user_id"] = userId.Value;
+        }
+
         var task = await SendAsync<TaskItem>(
-            HttpMethod.Post, baseUrl, "tasks", token, new { title, description });
+            HttpMethod.Post, baseUrl, "tasks", token, payload);
         return task ?? throw new ApiException(Strings.EmptyTaskResponse);
     }
 
@@ -179,6 +214,9 @@ public sealed class ApiClient
     {
         [JsonPropertyName("name")]
         public string Name { get; init; } = string.Empty;
+
+        [JsonPropertyName("role")]
+        public string Role { get; init; } = "worker";
     }
 }
 

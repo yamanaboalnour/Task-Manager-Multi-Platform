@@ -58,6 +58,22 @@ public static class Strings
     public static string DeviceName => Get(nameof(DeviceName));
     public static string TaskStatus => Get(nameof(TaskStatus));
     public static string Field => Get(nameof(Field));
+    public static string Manager => Get(nameof(Manager));
+    public static string Worker => Get(nameof(Worker));
+    public static string UserManagement => Get(nameof(UserManagement));
+    public static string ShowTasks => Get(nameof(ShowTasks));
+    public static string AddUser => Get(nameof(AddUser));
+    public static string SaveUser => Get(nameof(SaveUser));
+    public static string UserDetails => Get(nameof(UserDetails));
+    public static string UserRole => Get(nameof(UserRole));
+    public static string ChangePasswordOptional => Get(nameof(ChangePasswordOptional));
+    public static string SelectUser => Get(nameof(SelectUser));
+    public static string UserCreated => Get(nameof(UserCreated));
+    public static string UserSaved => Get(nameof(UserSaved));
+    public static string EmptyUserResponse => Get(nameof(EmptyUserResponse));
+    public static string UserCount => Get(nameof(UserCount));
+    public static string UserFieldsRequired => Get(nameof(UserFieldsRequired));
+    public static string UserPasswordRequired => Get(nameof(UserPasswordRequired));
 
     private static string Get(string name) =>
         ResourceManager.GetString(name, CultureInfo.CurrentUICulture)

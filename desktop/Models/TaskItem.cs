@@ -13,11 +13,29 @@ public sealed class TaskItem : INotifyPropertyChanged
     [JsonPropertyName("id")]
     public int Id { get; init; }
 
+    [JsonPropertyName("user_id")]
+    public int UserId { get; init; }
+
+    [JsonPropertyName("user")]
+    public TaskOwner? User { get; init; }
+
+    [JsonIgnore]
+    public string OwnerName => User?.Name ?? string.Empty;
+
     [JsonPropertyName("title")]
     public string Title
     {
         get => _title;
         set => SetField(ref _title, value);
+    }
+
+    public sealed class TaskOwner
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; init; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; init; } = string.Empty;
     }
 
     [JsonPropertyName("description")]

@@ -17,9 +17,11 @@ class TaskViewModel extends ChangeNotifier {
   String? error;
   Map<String, dynamic>? user;
   List<Task> tasks = const [];
+  List<Map<String, dynamic>> users = const [];
   static final _strings = AppLocalizationsAr();
 
   bool get isAuthenticated => _token != null;
+  bool get isManager => user?['role'] == 'manager';
 
   Future<void> initialize() async {
     try {
@@ -28,12 +30,10 @@ class TaskViewModel extends ChangeNotifier {
       if (_token != null) {
         user = await _repository.currentUser(_token!);
         await loadTasks();
+        if (isManager) await loadUsers();
       }
     } on ApiException catch (exception) {
-      if (exception.statusCode == 401 || exception.statusCode == 419) {
-        await _repository.clearToken();
-        _token = null;
-      }
+      await _clearExpiredSession(exception);
       error = exception.message;
     } catch (exception) {
       error = _strings.unexpectedError;
@@ -52,6 +52,7 @@ class TaskViewModel extends ChangeNotifier {
       return true;
     } on ApiException catch (exception) {
       error = exception.message;
+      await _clearExpiredSession(exception);
       notifyListeners();
       return false;
     } catch (exception) {
@@ -90,9 +91,11 @@ class TaskViewModel extends ChangeNotifier {
       _token = token;
       user = responseUser;
       await loadTasks();
+      if (isManager) await loadUsers();
       return error == null;
     } on ApiException catch (exception) {
       error = exception.message;
+      await _clearExpiredSession(exception);
       return false;
     } catch (exception) {
       error = _strings.unexpectedError;
@@ -113,11 +116,7 @@ class TaskViewModel extends ChangeNotifier {
       tasks = await _repository.getTasks(token);
     } on ApiException catch (exception) {
       error = exception.message;
-      if (exception.statusCode == 401 || exception.statusCode == 419) {
-        await _repository.clearToken();
-        _token = null;
-        user = null;
-      }
+      await _clearExpiredSession(exception);
     } catch (exception) {
       error = _strings.unexpectedError;
     } finally {
@@ -126,10 +125,26 @@ class TaskViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> loadUsers() async {
+    final token = _token;
+    if (token == null || !isManager) return;
+    try {
+      users = await _repository.getUsers(token);
+      error = null;
+    } on ApiException catch (exception) {
+      error = exception.message;
+      await _clearExpiredSession(exception);
+    } catch (exception) {
+      error = _strings.unexpectedError;
+    }
+    notifyListeners();
+  }
+
   Future<bool> saveTask({
     int? id,
     required String title,
     required String description,
+    int? userId,
   }) async {
     final token = _token;
     if (token == null) return false;
@@ -142,6 +157,7 @@ class TaskViewModel extends ChangeNotifier {
               token,
               title: title,
               description: description,
+              userId: userId,
             )
           : await _repository.updateTask(
               token,
@@ -153,6 +169,53 @@ class TaskViewModel extends ChangeNotifier {
       return true;
     } on ApiException catch (exception) {
       error = exception.message;
+      await _clearExpiredSession(exception);
+      return false;
+    } catch (exception) {
+      error = _strings.unexpectedError;
+      return false;
+    } finally {
+      isWorking = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> saveUser({
+    int? id,
+    required String name,
+    required String email,
+    required String role,
+    String? password,
+  }) async {
+    final token = _token;
+    if (token == null || !isManager) return false;
+    isWorking = true;
+    error = null;
+    notifyListeners();
+    try {
+      if (id == null) {
+        await _repository.createUser(
+          token,
+          name: name,
+          email: email,
+          password: password ?? '',
+          role: role,
+        );
+      } else {
+        await _repository.updateUser(
+          token,
+          id,
+          name: name,
+          email: email,
+          password: password,
+          role: role,
+        );
+      }
+      await loadUsers();
+      return error == null;
+    } on ApiException catch (exception) {
+      error = exception.message;
+      await _clearExpiredSession(exception);
       return false;
     } catch (exception) {
       error = _strings.unexpectedError;
@@ -171,6 +234,7 @@ class TaskViewModel extends ChangeNotifier {
       error = null;
     } on ApiException catch (exception) {
       error = exception.message;
+      await _clearExpiredSession(exception);
     } catch (exception) {
       error = _strings.unexpectedError;
     }
@@ -186,6 +250,7 @@ class TaskViewModel extends ChangeNotifier {
       error = null;
     } on ApiException catch (exception) {
       error = exception.message;
+      await _clearExpiredSession(exception);
     } catch (exception) {
       error = _strings.unexpectedError;
     }
@@ -198,6 +263,7 @@ class TaskViewModel extends ChangeNotifier {
       if (token != null) await _repository.logout(token);
     } on ApiException catch (exception) {
       error = exception.message;
+      await _clearExpiredSession(exception);
     } catch (exception) {
       error = _strings.unexpectedError;
     } finally {
@@ -209,6 +275,7 @@ class TaskViewModel extends ChangeNotifier {
       _token = null;
       user = null;
       tasks = const [];
+      users = const [];
       notifyListeners();
     }
   }
@@ -227,5 +294,14 @@ class TaskViewModel extends ChangeNotifier {
       copy[index] = updated;
       tasks = copy;
     }
+  }
+
+  Future<void> _clearExpiredSession(ApiException exception) async {
+    if (exception.statusCode != 401 && exception.statusCode != 419) return;
+    await _repository.clearToken();
+    _token = null;
+    user = null;
+    tasks = const [];
+    users = const [];
   }
 }

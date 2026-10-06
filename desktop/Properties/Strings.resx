@@ -27,7 +27,7 @@
   <data name="MarkComplete" xml:space="preserve"><value>تحديد كمكتملة</value></data>
   <data name="MarkPending" xml:space="preserve"><value>إعادة إلى قيد الإنجاز</value></data>
   <data name="SignInWithApi" xml:space="preserve"><value>سجّل الدخول باستخدام حسابك.</value></data>
-  <data name="WelcomeMessage" xml:space="preserve"><value>مرحبًا، {0}</value></data>
+  <data name="WelcomeMessage" xml:space="preserve"><value>مرحبًا، {0} · {1}</value></data>
   <data name="TaskDetails" xml:space="preserve"><value>تفاصيل المهمة</value></data>
   <data name="CredentialsRequired" xml:space="preserve"><value>أدخل البريد الإلكتروني وكلمة المرور.</value></data>
   <data name="LoadingTasks" xml:space="preserve"><value>جارٍ تحميل المهام...</value></data>
@@ -53,4 +53,20 @@
   <data name="DeviceName" xml:space="preserve"><value>اسم الجهاز</value></data>
   <data name="TaskStatus" xml:space="preserve"><value>حالة الإنجاز</value></data>
   <data name="Field" xml:space="preserve"><value>الحقل</value></data>
+  <data name="Manager" xml:space="preserve"><value>مدير</value></data>
+  <data name="Worker" xml:space="preserve"><value>عامل</value></data>
+  <data name="UserManagement" xml:space="preserve"><value>إدارة المستخدمين</value></data>
+  <data name="ShowTasks" xml:space="preserve"><value>عرض المهام</value></data>
+  <data name="AddUser" xml:space="preserve"><value>إضافة مستخدم</value></data>
+  <data name="SaveUser" xml:space="preserve"><value>حفظ المستخدم</value></data>
+  <data name="UserDetails" xml:space="preserve"><value>بيانات المستخدم</value></data>
+  <data name="UserRole" xml:space="preserve"><value>الدور</value></data>
+  <data name="ChangePasswordOptional" xml:space="preserve"><value>كلمة مرور جديدة (اختيارية)</value></data>
+  <data name="SelectUser" xml:space="preserve"><value>اختر المستخدم المسؤول عن المهمة</value></data>
+  <data name="UserCreated" xml:space="preserve"><value>تم إنشاء المستخدم.</value></data>
+  <data name="UserSaved" xml:space="preserve"><value>تم حفظ بيانات المستخدم.</value></data>
+  <data name="EmptyUserResponse" xml:space="preserve"><value>أعاد الخادم استجابة مستخدم فارغة.</value></data>
+  <data name="UserCount" xml:space="preserve"><value>عدد المستخدمين: {0}</value></data>
+  <data name="UserFieldsRequired" xml:space="preserve"><value>الاسم والبريد الإلكتروني مطلوبان.</value></data>
+  <data name="UserPasswordRequired" xml:space="preserve"><value>كلمة المرور مطلوبة وبحد أدنى 8 أحرف للمستخدم الجديد.</value></data>
 </root>

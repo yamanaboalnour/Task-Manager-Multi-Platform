@@ -12,7 +12,10 @@ class AuthService
      */
     public function register(array $attributes): User
     {
-        return User::create($attributes);
+        return User::create([
+            ...$attributes,
+            'role' => User::ROLE_WORKER,
+        ]);
     }
 
     /**
