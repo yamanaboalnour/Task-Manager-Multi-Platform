@@ -69,4 +69,23 @@
   <data name="UserCount" xml:space="preserve"><value>عدد المستخدمين: {0}</value></data>
   <data name="UserFieldsRequired" xml:space="preserve"><value>الاسم والبريد الإلكتروني مطلوبان.</value></data>
   <data name="UserPasswordRequired" xml:space="preserve"><value>كلمة المرور مطلوبة وبحد أدنى 8 أحرف للمستخدم الجديد.</value></data>
+  <data name="RegisterAccount" xml:space="preserve"><value>طلب إنشاء حساب</value></data>
+  <data name="FirstName" xml:space="preserve"><value>الاسم الأول</value></data>
+  <data name="LastName" xml:space="preserve"><value>اسم العائلة</value></data>
+  <data name="RequestAccount" xml:space="preserve"><value>إرسال طلب الحساب</value></data>
+  <data name="RequestSubmitted" xml:space="preserve"><value>تم إرسال طلب إنشاء الحساب للمراجعة. ستصلك النتيجة بعد موافقة المدير.</value></data>
+  <data name="NewAccount" xml:space="preserve"><value>مستخدم جديد؟ اطلب إنشاء حساب</value></data>
+  <data name="ExistingAccount" xml:space="preserve"><value>لديك حساب بالفعل؟ تسجيل الدخول</value></data>
+  <data name="ForgotPassword" xml:space="preserve"><value>نسيت كلمة المرور؟ إرسال رابط الاستعادة</value></data>
+  <data name="PasswordResetSent" xml:space="preserve"><value>إذا كان البريد مرتبطًا بحساب، فسيصلك رابط استعادة كلمة المرور.</value></data>
+  <data name="RegistrationRequests" xml:space="preserve"><value>طلبات إنشاء الحسابات</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="RequestApproved" xml:space="preserve"><value>تمت الموافقة</value></data>
+  <data name="RequestRejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="Approve" xml:space="preserve"><value>موافقة</value></data>
+  <data name="Reject" xml:space="preserve"><value>رفض</value></data>
+  <data name="RequestReviewComplete" xml:space="preserve"><value>تم تحديث حالة طلب الحساب.</value></data>
+  <data name="RegistrationFieldsRequired" xml:space="preserve"><value>الاسم الأول واسم العائلة والبريد الإلكتروني مطلوبة.</value></data>
+  <data name="PasswordConfirmationMismatch" xml:space="preserve"><value>تأكيد كلمة المرور غير متطابق أو كلمة المرور أقصر من 8 أحرف.</value></data>
+  <data name="EnterEmailForReset" xml:space="preserve"><value>أدخل بريدك الإلكتروني أولًا.</value></data>
 </root>

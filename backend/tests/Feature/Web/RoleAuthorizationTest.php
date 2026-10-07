@@ -76,16 +76,18 @@ class RoleAuthorizationTest extends TestCase
     public function test_registration_never_assigns_manager_role_from_web_input(): void
     {
         $this->post('/register', [
-            'name' => 'Public User',
+            'first_name' => 'Public',
+            'last_name' => 'User',
             'email' => 'public-role@example.test',
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'role' => User::ROLE_MANAGER,
-        ])->assertRedirect(route('tasks.index'));
+        ])->assertRedirect(route('login'));
 
-        $this->assertDatabaseHas('users', [
+        $this->assertDatabaseMissing('users', ['email' => 'public-role@example.test']);
+        $this->assertDatabaseHas('registration_requests', [
             'email' => 'public-role@example.test',
-            'role' => User::ROLE_WORKER,
+            'status' => 'pending',
         ]);
     }
 }

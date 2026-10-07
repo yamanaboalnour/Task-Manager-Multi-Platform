@@ -109,7 +109,7 @@ abstract class AppLocalizations {
   /// No description provided for @registerTitle.
   ///
   /// In ar, this message translates to:
-  /// **'إنشاء حساب'**
+  /// **'طلب إنشاء حساب'**
   String get registerTitle;
 
   /// No description provided for @welcomeBack.
@@ -127,7 +127,7 @@ abstract class AppLocalizations {
   /// No description provided for @registerSubtitle.
   ///
   /// In ar, this message translates to:
-  /// **'أنشئ حسابًا لمزامنة مهامك بين أجهزتك.'**
+  /// **'يراجع المدير طلبك قبل تفعيل الحساب.'**
   String get registerSubtitle;
 
   /// No description provided for @apiBaseUrl.
@@ -159,6 +159,18 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'الاسم'**
   String get name;
+
+  /// No description provided for @firstName.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم الأول'**
+  String get firstName;
+
+  /// No description provided for @lastName.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم العائلة'**
+  String get lastName;
 
   /// No description provided for @nameRequired.
   ///
@@ -211,8 +223,254 @@ abstract class AppLocalizations {
   /// No description provided for @createAccount.
   ///
   /// In ar, this message translates to:
-  /// **'إنشاء حساب'**
+  /// **'إرسال طلب إنشاء الحساب'**
   String get createAccount;
+
+  /// No description provided for @requestSubmitted.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم إرسال طلب إنشاء الحساب للمراجعة.'**
+  String get requestSubmitted;
+
+  /// No description provided for @forgotPassword.
+  ///
+  /// In ar, this message translates to:
+  /// **'نسيت كلمة المرور؟'**
+  String get forgotPassword;
+
+  /// No description provided for @forgotPasswordInstructions.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل بريدك الإلكتروني لإرسال رابط آمن لإعادة التعيين.'**
+  String get forgotPasswordInstructions;
+
+  /// No description provided for @resetLinkSent.
+  ///
+  /// In ar, this message translates to:
+  /// **'إذا كان البريد مرتبطًا بحساب، فسيتم إرسال رابط إعادة التعيين.'**
+  String get resetLinkSent;
+
+  /// No description provided for @sendResetLink.
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال رابط إعادة التعيين'**
+  String get sendResetLink;
+
+  /// No description provided for @passwordReset.
+  ///
+  /// In ar, this message translates to:
+  /// **'تمت إعادة تعيين كلمة المرور.'**
+  String get passwordReset;
+
+  /// No description provided for @resetPassword.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة تعيين كلمة المرور'**
+  String get resetPassword;
+
+  /// No description provided for @resetToken.
+  ///
+  /// In ar, this message translates to:
+  /// **'رمز إعادة التعيين من البريد'**
+  String get resetToken;
+
+  /// No description provided for @newPassword.
+  ///
+  /// In ar, this message translates to:
+  /// **'كلمة المرور الجديدة'**
+  String get newPassword;
+
+  /// No description provided for @registrationRequests.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلبات إنشاء الحسابات'**
+  String get registrationRequests;
+
+  /// No description provided for @approved.
+  ///
+  /// In ar, this message translates to:
+  /// **'تمت الموافقة'**
+  String get approved;
+
+  /// No description provided for @rejected.
+  ///
+  /// In ar, this message translates to:
+  /// **'مرفوض'**
+  String get rejected;
+
+  /// No description provided for @yes.
+  ///
+  /// In ar, this message translates to:
+  /// **'نعم'**
+  String get yes;
+
+  /// No description provided for @no.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا'**
+  String get no;
+
+  /// No description provided for @approve.
+  ///
+  /// In ar, this message translates to:
+  /// **'موافقة'**
+  String get approve;
+
+  /// No description provided for @reject.
+  ///
+  /// In ar, this message translates to:
+  /// **'رفض'**
+  String get reject;
+
+  /// No description provided for @surveys.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاستبيانات'**
+  String get surveys;
+
+  /// No description provided for @editSurvey.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل الاستبيان'**
+  String get editSurvey;
+
+  /// No description provided for @createSurvey.
+  ///
+  /// In ar, this message translates to:
+  /// **'إنشاء استبيان'**
+  String get createSurvey;
+
+  /// No description provided for @surveyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'عنوان الاستبيان'**
+  String get surveyTitle;
+
+  /// No description provided for @surveyDescription.
+  ///
+  /// In ar, this message translates to:
+  /// **'وصف الاستبيان'**
+  String get surveyDescription;
+
+  /// No description provided for @addQuestion.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة سؤال'**
+  String get addQuestion;
+
+  /// No description provided for @questionText.
+  ///
+  /// In ar, this message translates to:
+  /// **'نص السؤال'**
+  String get questionText;
+
+  /// No description provided for @questionType.
+  ///
+  /// In ar, this message translates to:
+  /// **'نوع السؤال'**
+  String get questionType;
+
+  /// No description provided for @shortAnswer.
+  ///
+  /// In ar, this message translates to:
+  /// **'إجابة قصيرة'**
+  String get shortAnswer;
+
+  /// No description provided for @longAnswer.
+  ///
+  /// In ar, this message translates to:
+  /// **'إجابة طويلة'**
+  String get longAnswer;
+
+  /// No description provided for @singleChoice.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختيار واحد'**
+  String get singleChoice;
+
+  /// No description provided for @multipleChoice.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختيار متعدد'**
+  String get multipleChoice;
+
+  /// No description provided for @dropdown.
+  ///
+  /// In ar, this message translates to:
+  /// **'قائمة منسدلة'**
+  String get dropdown;
+
+  /// No description provided for @yesNo.
+  ///
+  /// In ar, this message translates to:
+  /// **'نعم / لا'**
+  String get yesNo;
+
+  /// No description provided for @requiredQuestion.
+  ///
+  /// In ar, this message translates to:
+  /// **'إجابة مطلوبة'**
+  String get requiredQuestion;
+
+  /// No description provided for @optionsCommaSeparated.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخيارات، مفصولة بفواصل'**
+  String get optionsCommaSeparated;
+
+  /// No description provided for @publishSurvey.
+  ///
+  /// In ar, this message translates to:
+  /// **'نشر الاستبيان'**
+  String get publishSurvey;
+
+  /// No description provided for @draft.
+  ///
+  /// In ar, this message translates to:
+  /// **'مسودة'**
+  String get draft;
+
+  /// No description provided for @published.
+  ///
+  /// In ar, this message translates to:
+  /// **'منشور'**
+  String get published;
+
+  /// No description provided for @submitSurvey.
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال الإجابات'**
+  String get submitSurvey;
+
+  /// No description provided for @surveySubmitted.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم إرسال الاستبيان بنجاح.'**
+  String get surveySubmitted;
+
+  /// No description provided for @surveyResults.
+  ///
+  /// In ar, this message translates to:
+  /// **'نتائج الاستبيان'**
+  String get surveyResults;
+
+  /// No description provided for @participants.
+  ///
+  /// In ar, this message translates to:
+  /// **'عدد المشاركين'**
+  String get participants;
+
+  /// No description provided for @alreadySubmitted.
+  ///
+  /// In ar, this message translates to:
+  /// **'لقد أرسلت إجابتك عن هذا الاستبيان بالفعل.'**
+  String get alreadySubmitted;
+
+  /// No description provided for @noSurveys.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد استبيانات متاحة.'**
+  String get noSurveys;
 
   /// No description provided for @signIn.
   ///
@@ -229,7 +487,7 @@ abstract class AppLocalizations {
   /// No description provided for @newAccountPrompt.
   ///
   /// In ar, this message translates to:
-  /// **'مستخدم جديد؟ أنشئ حسابًا'**
+  /// **'مستخدم جديد؟ اطلب إنشاء حساب'**
   String get newAccountPrompt;
 
   /// No description provided for @myTasks.
@@ -339,6 +597,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'أعاد الخادم قائمة مستخدمين غير صالحة.'**
   String get invalidUserListResponse;
+
+  /// No description provided for @invalidSurveyListResponse.
+  ///
+  /// In ar, this message translates to:
+  /// **'أعاد الخادم قائمة استبيانات غير صالحة.'**
+  String get invalidSurveyListResponse;
 
   /// No description provided for @signOut.
   ///

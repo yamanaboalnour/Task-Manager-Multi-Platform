@@ -28,15 +28,34 @@
                     <TextBox Text="{Binding ApiBaseUrl, UpdateSourceTrigger=PropertyChanged}"
                              FlowDirection="LeftToRight" TextAlignment="Left"
                              ToolTip="{x:Static properties:Strings.ApiUrlToolTip}" />
+                    <TextBlock Text="{x:Static properties:Strings.FirstName}"
+                               Visibility="{Binding IsRegistering, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    <TextBox Text="{Binding FirstName, UpdateSourceTrigger=PropertyChanged}"
+                             Visibility="{Binding IsRegistering, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    <TextBlock Text="{x:Static properties:Strings.LastName}"
+                               Visibility="{Binding IsRegistering, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    <TextBox Text="{Binding LastName, UpdateSourceTrigger=PropertyChanged}"
+                             Visibility="{Binding IsRegistering, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     <TextBlock Text="{x:Static properties:Strings.Email}" />
                     <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"
                              FlowDirection="LeftToRight" TextAlignment="Left" />
                     <TextBlock Text="{x:Static properties:Strings.Password}" />
                     <PasswordBox x:Name="LoginPassword" FlowDirection="LeftToRight" Padding="9,7" Margin="0,5,0,16"
                                  PasswordChanged="LoginPassword_OnPasswordChanged" />
-                    <Button Content="{x:Static properties:Strings.SignIn}" Command="{Binding LoginCommand}"
+                    <TextBlock Text="{x:Static properties:Strings.ConfirmPassword}"
+                               Visibility="{Binding IsRegistering, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    <PasswordBox x:Name="ConfirmRegistrationPassword" FlowDirection="LeftToRight"
+                                 Padding="9,7" Margin="0,5,0,16"
+                                 PasswordChanged="ConfirmRegistrationPassword_OnPasswordChanged"
+                                 Visibility="{Binding IsRegistering, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    <Button Content="{Binding AuthenticationActionLabel}" Command="{Binding LoginCommand}"
                             Background="{StaticResource AccentBrush}" Foreground="White"
                             HorizontalAlignment="Right" />
+                    <Button Content="{x:Static properties:Strings.ForgotPassword}" Command="{Binding ForgotPasswordCommand}"
+                            HorizontalAlignment="Right"
+                            Visibility="{Binding IsNotRegistering, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    <Button Content="{Binding RegistrationToggleLabel}" Command="{Binding ToggleRegistrationCommand}"
+                            HorizontalAlignment="Right" Margin="0,4,0,0" />
                     <TextBlock Text="{Binding ErrorMessage}" Foreground="#B42318" TextWrapping="Wrap"
                                Margin="0,12,0,0" />
                     <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource MutedBrush}"
@@ -62,6 +81,8 @@
                     <Button DockPanel.Dock="Left" Content="{x:Static properties:Strings.ShowTasks}" Command="{Binding ShowTasksCommand}"
                             Visibility="{Binding IsManager, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="8,0,0,0" />
                     <Button DockPanel.Dock="Left" Content="{x:Static properties:Strings.UserManagement}" Command="{Binding ManageUsersCommand}"
+                            Visibility="{Binding IsManager, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="8,0,0,0" />
+                    <Button DockPanel.Dock="Left" Content="{x:Static properties:Strings.RegistrationRequests}" Command="{Binding ShowRegistrationRequestsCommand}"
                             Visibility="{Binding IsManager, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="8,0,0,0" />
                     <Button DockPanel.Dock="Left" Content="{x:Static properties:Strings.Refresh}" Command="{Binding RefreshCommand}" />
                 </DockPanel>
@@ -187,6 +208,44 @@
                             <TextBlock Text="{Binding ErrorMessage}" Foreground="#B42318" TextWrapping="Wrap"
                                        Margin="0,12,0,0" />
                         </StackPanel>
+                    </Border>
+                </Grid>
+
+                <Grid x:Name="RegistrationManagementPanel" Grid.Row="2"
+                      Visibility="{Binding IsRegistrationManagement, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Border Background="White" CornerRadius="8" Padding="16">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="{x:Static properties:Strings.RegistrationRequests}"
+                                       FontSize="17" FontWeight="SemiBold" Margin="0,0,0,12" />
+                            <ListBox ItemsSource="{Binding RegistrationRequests}"
+                                     SelectedItem="{Binding SelectedRegistrationRequest}"
+                                     BorderThickness="0" Background="Transparent">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderBrush="#EAECF0" BorderThickness="0,0,0,1"
+                                                Padding="8,12">
+                                            <DockPanel LastChildFill="False">
+                                                <StackPanel DockPanel.Dock="Right">
+                                                    <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{Binding Email}" FlowDirection="LeftToRight"
+                                                               TextAlignment="Left" Foreground="#667085" />
+                                                    <TextBlock Text="{Binding StatusLabel}" Foreground="{StaticResource MutedBrush}" />
+                                                </StackPanel>
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <WrapPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+                                <Button Content="{x:Static properties:Strings.Approve}"
+                                        Command="{Binding ApproveRegistrationRequestCommand}"
+                                        Background="{StaticResource AccentBrush}" Foreground="White" />
+                                <Button Content="{x:Static properties:Strings.Reject}"
+                                        Command="{Binding RejectRegistrationRequestCommand}" />
+                                <Button Content="{x:Static properties:Strings.Refresh}"
+                                        Command="{Binding ShowRegistrationRequestsCommand}" />
+                            </WrapPanel>
+                        </DockPanel>
                     </Border>
                 </Grid>
             </Grid>

@@ -15,9 +15,12 @@ class TaskViewModel extends ChangeNotifier {
   bool isWorking = false;
   String apiBaseUrl = 'http://10.0.2.2:8000';
   String? error;
+  String? info;
   Map<String, dynamic>? user;
   List<Task> tasks = const [];
   List<Map<String, dynamic>> users = const [];
+  List<Map<String, dynamic>> registrationRequests = const [];
+  List<Map<String, dynamic>> surveys = const [];
   static final _strings = AppLocalizationsAr();
 
   bool get isAuthenticated => _token != null;
@@ -30,7 +33,11 @@ class TaskViewModel extends ChangeNotifier {
       if (_token != null) {
         user = await _repository.currentUser(_token!);
         await loadTasks();
-        if (isManager) await loadUsers();
+        if (isManager) {
+          await loadUsers();
+          await loadRegistrationRequests();
+        }
+        await loadSurveys();
       }
     } on ApiException catch (exception) {
       await _clearExpiredSession(exception);
@@ -65,20 +72,16 @@ class TaskViewModel extends ChangeNotifier {
   Future<bool> authenticate({
     required String email,
     required String password,
-    String? name,
-    String? passwordConfirmation,
   }) async {
     isWorking = true;
     error = null;
     notifyListeners();
     try {
       final response = await _repository.authenticate(
-        endpoint: name == null ? '/login' : '/register',
+        endpoint: '/login',
         body: {
-          'name': ?name,
           'email': email,
           'password': password,
-          'password_confirmation': ?passwordConfirmation,
           'device_name': 'task-manager-mobile',
         },
       );
@@ -91,7 +94,11 @@ class TaskViewModel extends ChangeNotifier {
       _token = token;
       user = responseUser;
       await loadTasks();
-      if (isManager) await loadUsers();
+      if (isManager) {
+        await loadUsers();
+        await loadRegistrationRequests();
+      }
+      await loadSurveys();
       return error == null;
     } on ApiException catch (exception) {
       error = exception.message;
@@ -103,6 +110,232 @@ class TaskViewModel extends ChangeNotifier {
     } finally {
       isWorking = false;
       notifyListeners();
+    }
+  }
+
+  Future<bool> requestAccount({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+  }) async {
+    isWorking = true;
+    error = null;
+    info = null;
+    notifyListeners();
+    try {
+      await _repository.requestRegistration(
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        password: password,
+      );
+      info = _strings.requestSubmitted;
+      return true;
+    } on ApiException catch (exception) {
+      error = exception.message;
+      return false;
+    } catch (exception) {
+      error = _strings.unexpectedError;
+      return false;
+    } finally {
+      isWorking = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> forgotPassword(String email) async {
+    try {
+      await _repository.forgotPassword(email);
+      error = null;
+      info = _strings.resetLinkSent;
+      return true;
+    } on ApiException catch (exception) {
+      error = exception.message;
+      return false;
+    } catch (exception) {
+      error = _strings.unexpectedError;
+      return false;
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  Future<bool> resetPassword({
+    required String email,
+    required String token,
+    required String password,
+    required String confirmation,
+  }) async {
+    try {
+      await _repository.resetPassword(
+        email: email,
+        token: token,
+        password: password,
+        confirmation: confirmation,
+      );
+      error = null;
+      info = _strings.passwordReset;
+      return true;
+    } on ApiException catch (exception) {
+      error = exception.message;
+      return false;
+    } catch (exception) {
+      error = _strings.unexpectedError;
+      return false;
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadRegistrationRequests() async {
+    final token = _token;
+    if (token == null || !isManager) return;
+    try {
+      registrationRequests = await _repository.getRegistrationRequests(token);
+      error = null;
+    } on ApiException catch (exception) {
+      error = exception.message;
+      await _clearExpiredSession(exception);
+    } catch (exception) {
+      error = _strings.unexpectedError;
+    }
+    notifyListeners();
+  }
+
+  Future<void> reviewRegistrationRequest(
+    int id, {
+    required bool approve,
+  }) async {
+    final token = _token;
+    if (token == null || !isManager) return;
+    try {
+      await _repository.reviewRegistrationRequest(token, id, approve: approve);
+      await loadRegistrationRequests();
+    } on ApiException catch (exception) {
+      error = exception.message;
+      await _clearExpiredSession(exception);
+    } catch (exception) {
+      error = _strings.unexpectedError;
+    }
+    notifyListeners();
+  }
+
+  Future<void> loadSurveys() async {
+    final token = _token;
+    if (token == null) return;
+    try {
+      surveys = await _repository.getSurveys(token);
+      error = null;
+    } on ApiException catch (exception) {
+      error = exception.message;
+      await _clearExpiredSession(exception);
+    } catch (exception) {
+      error = _strings.unexpectedError;
+    }
+    notifyListeners();
+  }
+
+  Future<bool> saveSurvey({
+    int? id,
+    required String title,
+    required String description,
+    required List<Map<String, Object?>> questions,
+  }) async {
+    final token = _token;
+    if (token == null || !isManager) return false;
+    try {
+      await _repository.saveSurvey(
+        token,
+        id: id,
+        title: title,
+        description: description,
+        questions: questions,
+      );
+      await loadSurveys();
+      return error == null;
+    } on ApiException catch (exception) {
+      error = exception.message;
+      await _clearExpiredSession(exception);
+      return false;
+    } catch (exception) {
+      error = _strings.unexpectedError;
+      return false;
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  Future<bool> publishSurvey(int id) async {
+    final token = _token;
+    if (token == null || !isManager) return false;
+    try {
+      await _repository.publishSurvey(token, id);
+      await loadSurveys();
+      return error == null;
+    } on ApiException catch (exception) {
+      error = exception.message;
+      await _clearExpiredSession(exception);
+      return false;
+    } catch (exception) {
+      error = _strings.unexpectedError;
+      return false;
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  Future<Map<String, dynamic>?> getSurvey(int id) async {
+    final token = _token;
+    if (token == null) return null;
+    try {
+      return await _repository.getSurvey(token, id);
+    } on ApiException catch (exception) {
+      error = exception.message;
+      await _clearExpiredSession(exception);
+      notifyListeners();
+      return null;
+    } catch (exception) {
+      error = _strings.unexpectedError;
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<bool> submitSurvey(int id, List<Map<String, Object?>> answers) async {
+    final token = _token;
+    if (token == null) return false;
+    try {
+      await _repository.submitSurvey(token, id, answers);
+      await loadSurveys();
+      error = null;
+      return true;
+    } on ApiException catch (exception) {
+      error = exception.message;
+      await _clearExpiredSession(exception);
+      return false;
+    } catch (exception) {
+      error = _strings.unexpectedError;
+      return false;
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  Future<Map<String, dynamic>?> getSurveyResults(int id) async {
+    final token = _token;
+    if (token == null || !isManager) return null;
+    try {
+      return await _repository.getSurveyResults(token, id);
+    } on ApiException catch (exception) {
+      error = exception.message;
+      await _clearExpiredSession(exception);
+      notifyListeners();
+      return null;
+    } catch (exception) {
+      error = _strings.unexpectedError;
+      notifyListeners();
+      return null;
     }
   }
 
@@ -274,14 +507,18 @@ class TaskViewModel extends ChangeNotifier {
       }
       _token = null;
       user = null;
+      info = null;
       tasks = const [];
       users = const [];
+      registrationRequests = const [];
+      surveys = const [];
       notifyListeners();
     }
   }
 
   void clearError() {
     error = null;
+    info = null;
     notifyListeners();
   }
 
@@ -303,5 +540,7 @@ class TaskViewModel extends ChangeNotifier {
     user = null;
     tasks = const [];
     users = const [];
+    registrationRequests = const [];
+    surveys = const [];
   }
 }

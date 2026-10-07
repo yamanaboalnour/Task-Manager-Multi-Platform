@@ -17,16 +17,19 @@ class RoleAuthorizationTest extends TestCase
         $this->postJson('/api/v1/users', [])->assertUnauthorized();
     }
 
-    public function test_public_registration_always_creates_a_worker_even_if_role_is_forged(): void
+    public function test_public_registration_request_cannot_assign_manager_role(): void
     {
-        $this->postJson('/api/v1/register', [
-            'name' => 'Untrusted User',
+        $this->postJson('/api/v1/register-request', [
+            'first_name' => 'Untrusted',
+            'last_name' => 'User',
             'email' => 'untrusted@example.test',
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'role' => User::ROLE_MANAGER,
         ])->assertCreated()
-            ->assertJsonPath('user.role', User::ROLE_WORKER);
+            ->assertJsonPath('registration_request.status', 'pending');
+
+        $this->assertDatabaseMissing('users', ['email' => 'untrusted@example.test']);
     }
 
     public function test_trusted_console_command_can_bootstrap_an_existing_manager(): void

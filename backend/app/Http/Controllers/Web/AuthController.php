@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
-use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\StoreRegistrationRequest;
 use App\Services\AuthService;
+use App\Services\RegistrationRequestService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,14 +22,13 @@ class AuthController extends Controller
             : view('auth.register');
     }
 
-    public function register(RegisterRequest $request, AuthService $auth): RedirectResponse
-    {
-        $user = $auth->register($request->validated());
+    public function register(
+        StoreRegistrationRequest $request,
+        RegistrationRequestService $requests,
+    ): RedirectResponse {
+        $requests->submit($request->validated());
 
-        Auth::login($user);
-        $request->session()->regenerate();
-
-        return redirect()->route(Auth::user()->isManager() ? 'dashboard' : 'tasks.index');
+        return redirect()->route('login')->with('status', __('Your account request has been submitted for review.'));
     }
 
     public function createLogin(): View|RedirectResponse
@@ -48,7 +48,7 @@ class AuthController extends Controller
             ]);
         }
 
-        Auth::login($user, $request->boolean('remember'));
+        Auth::login($user);
         $request->session()->regenerate();
 
         return redirect()->intended(route(Auth::user()->isManager() ? 'dashboard' : 'tasks.index'));

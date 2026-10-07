@@ -27,6 +27,41 @@ abstract interface class TaskRepository {
     required String endpoint,
     required Map<String, String> body,
   });
+  Future<void> requestRegistration({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+  });
+  Future<void> forgotPassword(String email);
+  Future<void> resetPassword({
+    required String email,
+    required String token,
+    required String password,
+    required String confirmation,
+  });
+  Future<List<Map<String, dynamic>>> getRegistrationRequests(String token);
+  Future<void> reviewRegistrationRequest(
+    String token,
+    int id, {
+    required bool approve,
+  });
+  Future<List<Map<String, dynamic>>> getSurveys(String token);
+  Future<Map<String, dynamic>> getSurvey(String token, int id);
+  Future<Map<String, dynamic>> saveSurvey(
+    String token, {
+    int? id,
+    required String title,
+    required String description,
+    required List<Map<String, Object?>> questions,
+  });
+  Future<void> publishSurvey(String token, int id);
+  Future<Map<String, dynamic>> submitSurvey(
+    String token,
+    int id,
+    List<Map<String, Object?>> answers,
+  );
+  Future<Map<String, dynamic>> getSurveyResults(String token, int id);
   Future<void> logout(String token);
   Future<List<Task>> getTasks(String token);
   Future<List<Map<String, dynamic>>> getUsers(String token);
@@ -215,6 +250,127 @@ class HttpTaskRepository implements TaskRepository {
   @override
   Future<void> logout(String token) async {
     await _request('POST', '/logout', token: token);
+  }
+
+  @override
+  Future<void> requestRegistration({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+  }) async {
+    await _request('POST', '/register-request', body: {
+      'first_name': firstName,
+      'last_name': lastName,
+      'email': email,
+      'password': password,
+      'password_confirmation': password,
+    });
+  }
+
+  @override
+  Future<void> forgotPassword(String email) async {
+    await _request('POST', '/forgot-password', body: {'email': email});
+  }
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String token,
+    required String password,
+    required String confirmation,
+  }) async {
+    await _request('POST', '/reset-password', body: {
+      'email': email,
+      'token': token,
+      'password': password,
+      'password_confirmation': confirmation,
+    });
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getRegistrationRequests(String token) async {
+    final response = await _request('GET', '/registration-requests', token: token);
+    if (response is! List) throw ApiException(AppLocalizationsAr().invalidUserListResponse);
+    return response.cast<Map<String, dynamic>>();
+  }
+
+  @override
+  Future<void> reviewRegistrationRequest(
+    String token,
+    int id, {
+    required bool approve,
+  }) async {
+    await _request(
+      'POST',
+      '/registration-requests/$id/${approve ? 'approve' : 'reject'}',
+      token: token,
+      body: const {},
+    );
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getSurveys(String token) async {
+    final response = await _request('GET', '/surveys', token: token);
+    if (response is! List) throw ApiException(AppLocalizationsAr().invalidSurveyListResponse);
+    return response.cast<Map<String, dynamic>>();
+  }
+
+  @override
+  Future<Map<String, dynamic>> getSurvey(String token, int id) async {
+    final response = await _request('GET', '/surveys/$id', token: token);
+    if (response is! Map<String, dynamic>) throw ApiException(AppLocalizationsAr().invalidServerResponse);
+    return response;
+  }
+
+  @override
+  Future<Map<String, dynamic>> saveSurvey(
+    String token, {
+    int? id,
+    required String title,
+    required String description,
+    required List<Map<String, Object?>> questions,
+  }) async {
+    final response = await _request(
+      id == null ? 'POST' : 'PUT',
+      id == null ? '/surveys' : '/surveys/$id',
+      token: token,
+      body: {
+        'title': title,
+        'description': description,
+        'questions': questions,
+      },
+    );
+    if (response is! Map<String, dynamic>) throw ApiException(AppLocalizationsAr().invalidServerResponse);
+    return response;
+  }
+
+  @override
+  Future<void> publishSurvey(String token, int id) async {
+    await _request('POST', '/surveys/$id/publish', token: token, body: const {});
+  }
+
+  @override
+  Future<Map<String, dynamic>> submitSurvey(
+    String token,
+    int id,
+    List<Map<String, Object?>> answers,
+  ) async {
+    final response = await _request(
+      'POST',
+      '/surveys/$id/responses',
+      token: token,
+      body: {'answers': answers},
+    );
+    if (response is! Map<String, dynamic>) throw ApiException(AppLocalizationsAr().invalidServerResponse);
+    return response;
+  }
+
+  @override
+  Future<Map<String, dynamic>> getSurveyResults(String token, int id) async {
+    final response = await _request('GET', '/surveys/$id/responses', token: token);
+    if (response is! Map<String, dynamic>) throw ApiException(AppLocalizationsAr().invalidServerResponse);
+    return response;
   }
 
   @override

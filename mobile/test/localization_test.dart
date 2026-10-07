@@ -42,15 +42,15 @@ void main() {
     await tester.pumpWidget(TaskManagerApp(viewModel: viewModel));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('مستخدم جديد؟ أنشئ حسابًا'));
+    await tester.tap(find.text('مستخدم جديد؟ اطلب إنشاء حساب'));
     await tester.pumpAndSettle();
-    final createAccountButton = find.text('إنشاء حساب').last;
+    final createAccountButton = find.text('إرسال طلب إنشاء الحساب');
     await tester.ensureVisible(createAccountButton);
     await tester.pumpAndSettle();
     await tester.tap(createAccountButton);
     await tester.pumpAndSettle();
 
-    expect(find.text('الاسم مطلوب.'), findsOneWidget);
+    expect(find.text('الاسم مطلوب.'), findsNWidgets(2));
   });
 
   testWidgets('manager sees all tasks and can open account management', (
@@ -168,6 +168,66 @@ class _FakeTaskRepository implements TaskRepository {
 
   @override
   Future<void> saveToken(String token) async {}
+
+  @override
+  Future<void> requestRegistration({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+  }) async {}
+
+  @override
+  Future<void> forgotPassword(String email) async {}
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String token,
+    required String password,
+    required String confirmation,
+  }) async {}
+
+  @override
+  Future<List<Map<String, dynamic>>> getRegistrationRequests(
+    String token,
+  ) async => [];
+
+  @override
+  Future<void> reviewRegistrationRequest(
+    String token,
+    int id, {
+    required bool approve,
+  }) async {}
+
+  @override
+  Future<List<Map<String, dynamic>>> getSurveys(String token) async => [];
+
+  @override
+  Future<Map<String, dynamic>> getSurvey(String token, int id) async => {};
+
+  @override
+  Future<Map<String, dynamic>> saveSurvey(
+    String token, {
+    int? id,
+    required String title,
+    required String description,
+    required List<Map<String, Object?>> questions,
+  }) async => {};
+
+  @override
+  Future<void> publishSurvey(String token, int id) async {}
+
+  @override
+  Future<Map<String, dynamic>> submitSurvey(
+    String token,
+    int id,
+    List<Map<String, Object?>> answers,
+  ) async => {};
+
+  @override
+  Future<Map<String, dynamic>> getSurveyResults(String token, int id) async =>
+      {};
 
   @override
   Future<Map<String, dynamic>> authenticate({

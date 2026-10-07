@@ -101,9 +101,12 @@ return [
     'uuid' => 'يجب أن يكون :attribute معرّف UUID صالحًا.',
     'attributes' => [
         'name' => 'الاسم',
+        'first_name' => 'الاسم الأول',
+        'last_name' => 'اسم العائلة',
         'email' => 'البريد الإلكتروني',
         'password' => 'كلمة المرور',
         'password_confirmation' => 'تأكيد كلمة المرور',
+        'token' => 'رمز إعادة التعيين',
         'title' => 'العنوان',
         'description' => 'الوصف',
         'is_completed' => 'حالة الإنجاز',

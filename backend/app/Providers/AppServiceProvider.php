@@ -2,8 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\RegistrationRequest;
+use App\Models\Survey;
 use App\Models\Task;
 use App\Models\User;
+use App\Policies\RegistrationRequestPolicy;
+use App\Policies\SurveyPolicy;
 use App\Policies\TaskPolicy;
 use App\Policies\UserPolicy;
 use Illuminate\Support\Facades\Gate;
@@ -26,5 +30,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::policy(Task::class, TaskPolicy::class);
         Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(RegistrationRequest::class, RegistrationRequestPolicy::class);
+        Gate::policy(Survey::class, SurveyPolicy::class);
     }
 }

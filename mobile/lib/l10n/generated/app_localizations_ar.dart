@@ -15,7 +15,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get loginTitle => 'تسجيل الدخول';
 
   @override
-  String get registerTitle => 'إنشاء حساب';
+  String get registerTitle => 'طلب إنشاء حساب';
 
   @override
   String get welcomeBack => 'مرحبًا بعودتك';
@@ -24,7 +24,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get loginSubtitle => 'سجّل الدخول لمتابعة مهامك.';
 
   @override
-  String get registerSubtitle => 'أنشئ حسابًا لمزامنة مهامك بين أجهزتك.';
+  String get registerSubtitle => 'يراجع المدير طلبك قبل تفعيل الحساب.';
 
   @override
   String get apiBaseUrl => 'عنوان API الأساسي';
@@ -41,6 +41,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get name => 'الاسم';
+
+  @override
+  String get firstName => 'الاسم الأول';
+
+  @override
+  String get lastName => 'اسم العائلة';
 
   @override
   String get nameRequired => 'الاسم مطلوب.';
@@ -68,7 +74,132 @@ class AppLocalizationsAr extends AppLocalizations {
   String get passwordsMismatch => 'كلمتا المرور غير متطابقتين.';
 
   @override
-  String get createAccount => 'إنشاء حساب';
+  String get createAccount => 'إرسال طلب إنشاء الحساب';
+
+  @override
+  String get requestSubmitted => 'تم إرسال طلب إنشاء الحساب للمراجعة.';
+
+  @override
+  String get forgotPassword => 'نسيت كلمة المرور؟';
+
+  @override
+  String get forgotPasswordInstructions =>
+      'أدخل بريدك الإلكتروني لإرسال رابط آمن لإعادة التعيين.';
+
+  @override
+  String get resetLinkSent =>
+      'إذا كان البريد مرتبطًا بحساب، فسيتم إرسال رابط إعادة التعيين.';
+
+  @override
+  String get sendResetLink => 'إرسال رابط إعادة التعيين';
+
+  @override
+  String get passwordReset => 'تمت إعادة تعيين كلمة المرور.';
+
+  @override
+  String get resetPassword => 'إعادة تعيين كلمة المرور';
+
+  @override
+  String get resetToken => 'رمز إعادة التعيين من البريد';
+
+  @override
+  String get newPassword => 'كلمة المرور الجديدة';
+
+  @override
+  String get registrationRequests => 'طلبات إنشاء الحسابات';
+
+  @override
+  String get approved => 'تمت الموافقة';
+
+  @override
+  String get rejected => 'مرفوض';
+
+  @override
+  String get yes => 'نعم';
+
+  @override
+  String get no => 'لا';
+
+  @override
+  String get approve => 'موافقة';
+
+  @override
+  String get reject => 'رفض';
+
+  @override
+  String get surveys => 'الاستبيانات';
+
+  @override
+  String get editSurvey => 'تعديل الاستبيان';
+
+  @override
+  String get createSurvey => 'إنشاء استبيان';
+
+  @override
+  String get surveyTitle => 'عنوان الاستبيان';
+
+  @override
+  String get surveyDescription => 'وصف الاستبيان';
+
+  @override
+  String get addQuestion => 'إضافة سؤال';
+
+  @override
+  String get questionText => 'نص السؤال';
+
+  @override
+  String get questionType => 'نوع السؤال';
+
+  @override
+  String get shortAnswer => 'إجابة قصيرة';
+
+  @override
+  String get longAnswer => 'إجابة طويلة';
+
+  @override
+  String get singleChoice => 'اختيار واحد';
+
+  @override
+  String get multipleChoice => 'اختيار متعدد';
+
+  @override
+  String get dropdown => 'قائمة منسدلة';
+
+  @override
+  String get yesNo => 'نعم / لا';
+
+  @override
+  String get requiredQuestion => 'إجابة مطلوبة';
+
+  @override
+  String get optionsCommaSeparated => 'الخيارات، مفصولة بفواصل';
+
+  @override
+  String get publishSurvey => 'نشر الاستبيان';
+
+  @override
+  String get draft => 'مسودة';
+
+  @override
+  String get published => 'منشور';
+
+  @override
+  String get submitSurvey => 'إرسال الإجابات';
+
+  @override
+  String get surveySubmitted => 'تم إرسال الاستبيان بنجاح.';
+
+  @override
+  String get surveyResults => 'نتائج الاستبيان';
+
+  @override
+  String get participants => 'عدد المشاركين';
+
+  @override
+  String get alreadySubmitted => 'لقد أرسلت إجابتك عن هذا الاستبيان بالفعل.';
+
+  @override
+  String get noSurveys => 'لا توجد استبيانات متاحة.';
 
   @override
   String get signIn => 'تسجيل الدخول';
@@ -77,7 +208,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get alreadyHaveAccount => 'لديك حساب بالفعل؟ سجّل الدخول';
 
   @override
-  String get newAccountPrompt => 'مستخدم جديد؟ أنشئ حسابًا';
+  String get newAccountPrompt => 'مستخدم جديد؟ اطلب إنشاء حساب';
 
   @override
   String get myTasks => 'مهامي';
@@ -132,6 +263,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get invalidUserListResponse => 'أعاد الخادم قائمة مستخدمين غير صالحة.';
+
+  @override
+  String get invalidSurveyListResponse =>
+      'أعاد الخادم قائمة استبيانات غير صالحة.';
 
   @override
   String get signOut => 'تسجيل الخروج';

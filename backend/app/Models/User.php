@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password', 'role'])]
+#[Fillable(['name', 'first_name', 'last_name', 'email', 'password', 'role'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -25,6 +26,8 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
         'role',
@@ -46,6 +49,26 @@ class User extends Authenticatable
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
+    }
+
+    public function registrationRequest(): HasOne
+    {
+        return $this->hasOne(RegistrationRequest::class);
+    }
+
+    public function reviewedRegistrationRequests(): HasMany
+    {
+        return $this->hasMany(RegistrationRequest::class, 'reviewed_by');
+    }
+
+    public function surveys(): HasMany
+    {
+        return $this->hasMany(Survey::class, 'manager_id');
+    }
+
+    public function surveyResponses(): HasMany
+    {
+        return $this->hasMany(SurveyResponse::class);
     }
 
     public function isManager(): bool

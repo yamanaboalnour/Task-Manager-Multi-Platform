@@ -8,17 +8,6 @@ use Illuminate\Support\Facades\Hash;
 class AuthService
 {
     /**
-     * @param  array{name: string, email: string, password: string}  $attributes
-     */
-    public function register(array $attributes): User
-    {
-        return User::create([
-            ...$attributes,
-            'role' => User::ROLE_WORKER,
-        ]);
-    }
-
-    /**
      * @param  array{email: string, password: string}  $credentials
      */
     public function authenticate(array $credentials): ?User

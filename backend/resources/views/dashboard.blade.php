@@ -20,6 +20,15 @@
             <p>{{ trans_choice('tasks.count', $taskCount, ['count' => $taskCount]) }}</p>
             <a class="button button-small" href="{{ route('tasks.index') }}">{{ __('Manage tasks') }}</a>
         </section>
+        <section class="panel summary-card">
+            <h2>{{ __('Registration requests') }}</h2>
+            <p>{{ trans_choice('registration-requests.count', $pendingRequestCount, ['count' => $pendingRequestCount]) }}</p>
+            <a class="button button-small" href="{{ route('registration-requests.index') }}">{{ __('Review requests') }}</a>
+        </section>
+        <section class="panel summary-card">
+            <h2>{{ __('Surveys') }}</h2>
+            <a class="button button-small" href="{{ route('surveys.index') }}">{{ __('Manage surveys') }}</a>
+        </section>
     </div>
     <section class="panel user-section">
         <h2>{{ __('Users and their tasks') }}</h2>

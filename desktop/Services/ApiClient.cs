@@ -27,6 +27,24 @@ public sealed class ApiClient
         return response ?? throw new ApiException(Strings.EmptySignInResponse);
     }
 
+    public async Task RequestRegistrationAsync(
+        string baseUrl, string firstName, string lastName, string email, string password)
+    {
+        await SendAsync<object>(
+            HttpMethod.Post, baseUrl, "register-request", null,
+            new
+            {
+                first_name = firstName,
+                last_name = lastName,
+                email,
+                password,
+                password_confirmation = password
+            });
+    }
+
+    public async Task RequestPasswordResetAsync(string baseUrl, string email) =>
+        await SendAsync<object>(HttpMethod.Post, baseUrl, "forgot-password", null, new { email });
+
     public async Task LogoutAsync(string baseUrl, string token) =>
         await SendAsync<object>(HttpMethod.Post, baseUrl, "logout", token, new { });
 
@@ -37,6 +55,21 @@ public sealed class ApiClient
     public async Task<IReadOnlyList<UserItem>> GetUsersAsync(string baseUrl, string token) =>
         await SendAsync<List<UserItem>>(HttpMethod.Get, baseUrl, "users", token)
         ?? [];
+
+    public async Task<IReadOnlyList<RegistrationRequestItem>> GetRegistrationRequestsAsync(
+        string baseUrl, string token) =>
+        await SendAsync<List<RegistrationRequestItem>>(
+            HttpMethod.Get, baseUrl, "registration-requests", token)
+        ?? [];
+
+    public async Task ReviewRegistrationRequestAsync(
+        string baseUrl, string token, int id, bool approve) =>
+        await SendAsync<object>(
+            HttpMethod.Post,
+            baseUrl,
+            $"registration-requests/{id}/{(approve ? "approve" : "reject")}",
+            token,
+            new { });
 
     public async Task<UserItem> CreateUserAsync(
         string baseUrl, string token, string name, string email, string password, string role)

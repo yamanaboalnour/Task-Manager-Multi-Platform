@@ -26,14 +26,10 @@
             <label for="password">{{ __('Password') }}</label>
             <input id="password" name="password" type="password" dir="ltr" required autocomplete="current-password">
 
-            <label>
-                <input name="remember" type="checkbox" value="1" style="width:auto; margin-inline-end:.35rem">
-                {{ __('Remember me') }}
-            </label>
-
             <button class="full" type="submit">{{ __('Log in') }}</button>
         </form>
 
-        <p class="auth-footer muted">{{ __('New to Task Manager?') }} <a href="{{ route('register') }}">{{ __('Create an account') }}</a></p>
+        <p class="auth-footer"><a href="{{ route('password.request') }}">{{ __('Forgot your password?') }}</a></p>
+        <p class="auth-footer muted">{{ __('New to Task Manager?') }} <a href="{{ route('register') }}">{{ __('Request an account') }}</a></p>
     </section>
 @endsection

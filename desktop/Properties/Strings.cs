@@ -74,6 +74,25 @@ public static class Strings
     public static string UserCount => Get(nameof(UserCount));
     public static string UserFieldsRequired => Get(nameof(UserFieldsRequired));
     public static string UserPasswordRequired => Get(nameof(UserPasswordRequired));
+    public static string RegisterAccount => Get(nameof(RegisterAccount));
+    public static string FirstName => Get(nameof(FirstName));
+    public static string LastName => Get(nameof(LastName));
+    public static string RequestAccount => Get(nameof(RequestAccount));
+    public static string RequestSubmitted => Get(nameof(RequestSubmitted));
+    public static string NewAccount => Get(nameof(NewAccount));
+    public static string ExistingAccount => Get(nameof(ExistingAccount));
+    public static string ForgotPassword => Get(nameof(ForgotPassword));
+    public static string PasswordResetSent => Get(nameof(PasswordResetSent));
+    public static string RegistrationRequests => Get(nameof(RegistrationRequests));
+    public static string RequestPending => Get(nameof(RequestPending));
+    public static string RequestApproved => Get(nameof(RequestApproved));
+    public static string RequestRejected => Get(nameof(RequestRejected));
+    public static string Approve => Get(nameof(Approve));
+    public static string Reject => Get(nameof(Reject));
+    public static string RequestReviewComplete => Get(nameof(RequestReviewComplete));
+    public static string RegistrationFieldsRequired => Get(nameof(RegistrationFieldsRequired));
+    public static string PasswordConfirmationMismatch => Get(nameof(PasswordConfirmationMismatch));
+    public static string EnterEmailForReset => Get(nameof(EnterEmailForReset));
 
     private static string Get(string name) =>
         ResourceManager.GetString(name, CultureInfo.CurrentUICulture)

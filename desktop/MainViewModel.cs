@@ -25,14 +25,20 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private string _userEditorName = string.Empty;
     private string _userEditorEmail = string.Empty;
     private string _userEditorPassword = string.Empty;
+    private string _firstName = string.Empty;
+    private string _lastName = string.Empty;
+    private string _passwordConfirmation = string.Empty;
     private TaskItem? _selectedTask;
     private UserItem? _selectedUser;
+    private RegistrationRequestItem? _selectedRegistrationRequest;
     private int? _selectedTaskOwnerId;
     private bool _isAuthenticated;
     private bool _isManager;
     private bool _isCreating;
     private bool _isCreatingUser;
     private bool _isUserManagement;
+    private bool _isRegistrationManagement;
+    private bool _isRegistering;
     private bool _userEditorIsManager;
     private bool _isBusy;
 
@@ -40,6 +46,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         _apiBaseUrl = _settings.LoadApiBaseUrl();
         LoginCommand = new AsyncCommand(LoginAsync, () => !IsBusy && !IsAuthenticated);
+        ToggleRegistrationCommand = new AsyncCommand(ToggleRegistrationAsync, () => !IsBusy && !IsAuthenticated);
+        ForgotPasswordCommand = new AsyncCommand(ForgotPasswordAsync, () => !IsBusy && !IsAuthenticated);
         LogoutCommand = new AsyncCommand(LogoutAsync, () => !IsBusy && IsAuthenticated);
         RefreshCommand = new AsyncCommand(LoadTasksAsync, () => !IsBusy && IsAuthenticated);
         NewTaskCommand = new AsyncCommand(NewTaskAsync, () => !IsBusy && IsAuthenticated);
@@ -52,13 +60,24 @@ public sealed class MainViewModel : INotifyPropertyChanged
         ShowTasksCommand = new AsyncCommand(ShowTasksAsync, () => !IsBusy && IsAuthenticated);
         NewUserCommand = new AsyncCommand(NewUserAsync, () => !IsBusy && IsManager);
         SaveUserCommand = new AsyncCommand(SaveUserAsync, () => !IsBusy && IsManager);
+        ShowRegistrationRequestsCommand = new AsyncCommand(
+            ShowRegistrationRequestsAsync, () => !IsBusy && IsManager);
+        ApproveRegistrationRequestCommand = new AsyncCommand(
+            () => ReviewRegistrationRequestAsync(true),
+            () => !IsBusy && IsManager && SelectedRegistrationRequest?.Status == "pending");
+        RejectRegistrationRequestCommand = new AsyncCommand(
+            () => ReviewRegistrationRequestAsync(false),
+            () => !IsBusy && IsManager && SelectedRegistrationRequest?.Status == "pending");
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ObservableCollection<TaskItem> Tasks { get; } = [];
     public ObservableCollection<UserItem> Users { get; } = [];
+    public ObservableCollection<RegistrationRequestItem> RegistrationRequests { get; } = [];
     public AsyncCommand LoginCommand { get; }
+    public AsyncCommand ToggleRegistrationCommand { get; }
+    public AsyncCommand ForgotPasswordCommand { get; }
     public AsyncCommand LogoutCommand { get; }
     public AsyncCommand RefreshCommand { get; }
     public AsyncCommand NewTaskCommand { get; }
@@ -69,6 +88,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public AsyncCommand ShowTasksCommand { get; }
     public AsyncCommand NewUserCommand { get; }
     public AsyncCommand SaveUserCommand { get; }
+    public AsyncCommand ShowRegistrationRequestsCommand { get; }
+    public AsyncCommand ApproveRegistrationRequestCommand { get; }
+    public AsyncCommand RejectRegistrationRequestCommand { get; }
 
     public string ApiBaseUrl
     {
@@ -87,6 +109,32 @@ public sealed class MainViewModel : INotifyPropertyChanged
         get => _password;
         set => SetField(ref _password, value);
     }
+
+    public string FirstName
+    {
+        get => _firstName;
+        set => SetField(ref _firstName, value);
+    }
+
+    public string LastName
+    {
+        get => _lastName;
+        set => SetField(ref _lastName, value);
+    }
+
+    public string PasswordConfirmation
+    {
+        get => _passwordConfirmation;
+        set => SetField(ref _passwordConfirmation, value);
+    }
+
+    public string AuthenticationActionLabel => IsRegistering
+        ? Properties.Strings.RequestAccount
+        : Properties.Strings.SignIn;
+
+    public string RegistrationToggleLabel => IsRegistering
+        ? Properties.Strings.ExistingAccount
+        : Properties.Strings.NewAccount;
 
     public string ErrorMessage
     {
@@ -107,7 +155,37 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public string EditorHeading => IsCreating ? Properties.Strings.NewTask : Properties.Strings.TaskDetails;
     public string UserEditorHeading => IsCreatingUser ? Properties.Strings.AddUser : Properties.Strings.UserDetails;
-    public bool IsTaskManagement => !IsUserManagement;
+    public bool IsTaskManagement => !IsUserManagement && !IsRegistrationManagement;
+    public bool IsRegistrationManagement => _isRegistrationManagement;
+
+    public bool IsRegistering
+    {
+        get => _isRegistering;
+        private set
+        {
+            if (SetField(ref _isRegistering, value))
+            {
+                OnPropertyChanged(nameof(AuthenticationActionLabel));
+                OnPropertyChanged(nameof(RegistrationToggleLabel));
+                OnPropertyChanged(nameof(IsNotRegistering));
+            }
+        }
+    }
+
+    public bool IsNotRegistering => !IsRegistering;
+
+    public RegistrationRequestItem? SelectedRegistrationRequest
+    {
+        get => _selectedRegistrationRequest;
+        set
+        {
+            if (SetField(ref _selectedRegistrationRequest, value))
+            {
+                ApproveRegistrationRequestCommand.NotifyCanExecuteChanged();
+                RejectRegistrationRequestCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
     public string ToggleCompletionLabel => SelectedTask?.IsCompleted == true
         ? Properties.Strings.MarkPending
         : Properties.Strings.MarkComplete;
@@ -277,6 +355,35 @@ public sealed class MainViewModel : INotifyPropertyChanged
         await RunBusyAsync(async () =>
         {
             _settings.SaveApiBaseUrl(ApiBaseUrl.Trim());
+            if (IsRegistering)
+            {
+                if (string.IsNullOrWhiteSpace(FirstName) || string.IsNullOrWhiteSpace(LastName))
+                {
+                    ErrorMessage = Properties.Strings.RegistrationFieldsRequired;
+                    return;
+                }
+
+                if (Password.Length < 8 || Password != PasswordConfirmation)
+                {
+                    ErrorMessage = Properties.Strings.PasswordConfirmationMismatch;
+                    return;
+                }
+
+                await _api.RequestRegistrationAsync(
+                    ApiBaseUrl,
+                    FirstName.Trim(),
+                    LastName.Trim(),
+                    Email.Trim(),
+                    Password);
+                Password = string.Empty;
+                PasswordConfirmation = string.Empty;
+                FirstName = string.Empty;
+                LastName = string.Empty;
+                IsRegistering = false;
+                StatusMessage = Properties.Strings.RequestSubmitted;
+                return;
+            }
+
             var result = await _api.LoginAsync(ApiBaseUrl, Email.Trim(), Password);
             _token = result.Token;
             _userName = string.IsNullOrWhiteSpace(result.User.Name) ? Email.Trim() : result.User.Name;
@@ -289,7 +396,33 @@ public sealed class MainViewModel : INotifyPropertyChanged
             if (IsManager)
             {
                 await LoadUsersCoreAsync();
+                await LoadRegistrationRequestsCoreAsync();
             }
+        });
+    }
+
+    private Task ToggleRegistrationAsync()
+    {
+        ErrorMessage = string.Empty;
+        IsRegistering = !IsRegistering;
+        Password = string.Empty;
+        PasswordConfirmation = string.Empty;
+        return Task.CompletedTask;
+    }
+
+    private async Task ForgotPasswordAsync()
+    {
+        ErrorMessage = string.Empty;
+        if (string.IsNullOrWhiteSpace(Email))
+        {
+            ErrorMessage = Properties.Strings.EnterEmailForReset;
+            return;
+        }
+
+        await RunBusyAsync(async () =>
+        {
+            await _api.RequestPasswordResetAsync(ApiBaseUrl, Email.Trim());
+            StatusMessage = Properties.Strings.PasswordResetSent;
         });
     }
 
@@ -466,15 +599,76 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private async Task ShowUsersAsync()
     {
         ErrorMessage = string.Empty;
+        _isRegistrationManagement = false;
+        OnPropertyChanged(nameof(IsRegistrationManagement));
+        OnPropertyChanged(nameof(IsTaskManagement));
         IsUserManagement = true;
         await RunBusyAsync(LoadUsersCoreAsync);
+    }
+
+    private async Task ShowRegistrationRequestsAsync()
+    {
+        ErrorMessage = string.Empty;
+        IsUserManagement = false;
+        _isRegistrationManagement = true;
+        OnPropertyChanged(nameof(IsRegistrationManagement));
+        OnPropertyChanged(nameof(IsTaskManagement));
+        await RunBusyAsync(LoadRegistrationRequestsCoreAsync);
     }
 
     private async Task ShowTasksAsync()
     {
         ErrorMessage = string.Empty;
+        _isRegistrationManagement = false;
+        OnPropertyChanged(nameof(IsRegistrationManagement));
+        OnPropertyChanged(nameof(IsTaskManagement));
         IsUserManagement = false;
         await LoadTasksAsync();
+    }
+
+    private async Task LoadRegistrationRequestsCoreAsync()
+    {
+        if (!IsManager)
+        {
+            return;
+        }
+
+        try
+        {
+            var requests = await _api.GetRegistrationRequestsAsync(ApiBaseUrl, _token);
+            RegistrationRequests.Clear();
+            foreach (var request in requests)
+            {
+                RegistrationRequests.Add(request);
+            }
+
+            SelectedRegistrationRequest = RegistrationRequests.FirstOrDefault(
+                request => request.Status == "pending");
+        }
+        catch (Exception exception)
+        {
+            HandleError(exception);
+        }
+    }
+
+    private async Task ReviewRegistrationRequestAsync(bool approve)
+    {
+        if (SelectedRegistrationRequest is not { Status: "pending" } request)
+        {
+            return;
+        }
+
+        ErrorMessage = string.Empty;
+        await RunBusyAsync(async () =>
+        {
+            await _api.ReviewRegistrationRequestAsync(ApiBaseUrl, _token, request.Id, approve);
+            StatusMessage = Properties.Strings.RequestReviewComplete;
+            await LoadRegistrationRequestsCoreAsync();
+            if (approve)
+            {
+                await LoadUsersCoreAsync();
+            }
+        });
     }
 
     private async Task LoadUsersCoreAsync()
@@ -606,15 +800,25 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _userName = string.Empty;
         Tasks.Clear();
         Users.Clear();
+        RegistrationRequests.Clear();
         UserEditorName = string.Empty;
         UserEditorEmail = string.Empty;
         UserEditorPassword = string.Empty;
+        Password = string.Empty;
+        PasswordConfirmation = string.Empty;
+        FirstName = string.Empty;
+        LastName = string.Empty;
         SelectedTask = null;
         SelectedUser = null;
+        SelectedRegistrationRequest = null;
         IsCreating = false;
         IsCreatingUser = false;
+        IsRegistering = false;
         IsManager = false;
         IsUserManagement = false;
+        _isRegistrationManagement = false;
+        OnPropertyChanged(nameof(IsRegistrationManagement));
+        OnPropertyChanged(nameof(IsTaskManagement));
         SelectedTaskOwnerId = null;
         IsAuthenticated = false;
         OnPropertyChanged(nameof(WelcomeMessage));
@@ -642,10 +846,15 @@ public sealed class MainViewModel : INotifyPropertyChanged
         SaveTaskCommand?.NotifyCanExecuteChanged();
         ToggleCompletionCommand?.NotifyCanExecuteChanged();
         DeleteTaskCommand?.NotifyCanExecuteChanged();
+        ToggleRegistrationCommand?.NotifyCanExecuteChanged();
+        ForgotPasswordCommand?.NotifyCanExecuteChanged();
         ManageUsersCommand?.NotifyCanExecuteChanged();
         ShowTasksCommand?.NotifyCanExecuteChanged();
         NewUserCommand?.NotifyCanExecuteChanged();
         SaveUserCommand?.NotifyCanExecuteChanged();
+        ShowRegistrationRequestsCommand?.NotifyCanExecuteChanged();
+        ApproveRegistrationRequestCommand?.NotifyCanExecuteChanged();
+        RejectRegistrationRequestCommand?.NotifyCanExecuteChanged();
     }
 
     private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)

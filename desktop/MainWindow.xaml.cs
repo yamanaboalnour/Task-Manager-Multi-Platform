@@ -31,12 +31,27 @@ public partial class MainWindow : Window
             {
                 UserPassword.Clear();
             }
+            else if (args.PropertyName == nameof(MainViewModel.Password)
+                     && string.IsNullOrEmpty(_viewModel.Password))
+            {
+                LoginPassword.Clear();
+            }
+            else if (args.PropertyName == nameof(MainViewModel.PasswordConfirmation)
+                     && string.IsNullOrEmpty(_viewModel.PasswordConfirmation))
+            {
+                ConfirmRegistrationPassword.Clear();
+            }
         };
     }
 
     private void LoginPassword_OnPasswordChanged(object sender, RoutedEventArgs e)
     {
         _viewModel.Password = LoginPassword.Password;
+    }
+
+    private void ConfirmRegistrationPassword_OnPasswordChanged(object sender, RoutedEventArgs e)
+    {
+        _viewModel.PasswordConfirmation = ConfirmRegistrationPassword.Password;
     }
 
     private void UserPassword_OnPasswordChanged(object sender, RoutedEventArgs e)

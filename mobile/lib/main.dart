@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'data/task_repository.dart';
+import 'account_survey_screens.dart';
 import 'l10n/generated/app_localizations.dart';
 import 'models/task.dart';
 import 'view_models/task_view_model.dart';
@@ -93,7 +94,8 @@ class _SignInScreenState extends State<SignInScreen> {
   late final _baseUrl = TextEditingController(
     text: widget.viewModel.apiBaseUrl,
   );
-  final _name = TextEditingController();
+  final _firstName = TextEditingController();
+  final _lastName = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirmation = TextEditingController();
@@ -102,7 +104,8 @@ class _SignInScreenState extends State<SignInScreen> {
   @override
   void dispose() {
     _baseUrl.dispose();
-    _name.dispose();
+    _firstName.dispose();
+    _lastName.dispose();
     _email.dispose();
     _password.dispose();
     _confirmation.dispose();
@@ -113,12 +116,107 @@ class _SignInScreenState extends State<SignInScreen> {
     if (!_formKey.currentState!.validate()) return;
     final saved = await widget.viewModel.setApiBaseUrl(_baseUrl.text);
     if (!saved || !mounted) return;
+    if (_registering) {
+      await widget.viewModel.requestAccount(
+        firstName: _firstName.text.trim(),
+        lastName: _lastName.text.trim(),
+        email: _email.text.trim(),
+        password: _password.text,
+      );
+      return;
+    }
     await widget.viewModel.authenticate(
       email: _email.text.trim(),
       password: _password.text,
-      name: _registering ? _name.text.trim() : null,
-      passwordConfirmation: _registering ? _confirmation.text : null,
     );
+  }
+
+  Future<void> _showPasswordReset() async {
+    final strings = AppLocalizations.of(context)!;
+    final email = TextEditingController(text: _email.text.trim());
+    final token = TextEditingController();
+    final password = TextEditingController();
+    final confirmation = TextEditingController();
+    var linkSent = false;
+    try {
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            title: Text(strings.forgotPassword),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(strings.forgotPasswordInstructions),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: email,
+                    textDirection: TextDirection.ltr,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(labelText: strings.email),
+                  ),
+                  if (linkSent) ...[
+                    TextField(
+                      controller: token,
+                      textDirection: TextDirection.ltr,
+                      decoration: InputDecoration(labelText: strings.resetToken),
+                    ),
+                    TextField(
+                      controller: password,
+                      obscureText: true,
+                      decoration: InputDecoration(labelText: strings.newPassword),
+                    ),
+                    TextField(
+                      controller: confirmation,
+                      obscureText: true,
+                      decoration: InputDecoration(labelText: strings.confirmPassword),
+                    ),
+                  ],
+                  if (widget.viewModel.error != null)
+                    _ErrorMessage(message: widget.viewModel.error!),
+                  if (widget.viewModel.info != null)
+                    Text(widget.viewModel.info!, textAlign: TextAlign.center),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: Text(strings.cancel),
+              ),
+              FilledButton(
+                onPressed: () async {
+                  if (!linkSent) {
+                    if (await widget.viewModel.forgotPassword(email.text.trim()) &&
+                        dialogContext.mounted) {
+                      setDialogState(() => linkSent = true);
+                    }
+                  } else if (password.text.length >= 8 &&
+                      password.text == confirmation.text) {
+                    final reset = await widget.viewModel.resetPassword(
+                      email: email.text.trim(),
+                      token: token.text.trim(),
+                      password: password.text,
+                      confirmation: confirmation.text,
+                    );
+                    if (reset && dialogContext.mounted) {
+                      Navigator.pop(dialogContext);
+                    }
+                  }
+                },
+                child: Text(linkSent ? strings.resetPassword : strings.sendResetLink),
+              ),
+            ],
+          ),
+        ),
+      );
+    } finally {
+      email.dispose();
+      token.dispose();
+      password.dispose();
+      confirmation.dispose();
+    }
   }
 
   @override
@@ -151,9 +249,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      _registering
-                          ? strings.registerSubtitle
-                          : strings.loginSubtitle,
+                      _registering ? strings.registerSubtitle : strings.loginSubtitle,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
@@ -184,12 +280,22 @@ class _SignInScreenState extends State<SignInScreen> {
                     const SizedBox(height: 16),
                     if (_registering) ...[
                       TextFormField(
-                        controller: _name,
+                        controller: _firstName,
                         textCapitalization: TextCapitalization.words,
                         decoration: InputDecoration(
-                          labelText: strings.name,
+                          labelText: strings.firstName,
                           prefixIcon: Icon(Icons.person_outline),
                         ),
+                        validator: (value) =>
+                            value == null || value.trim().isEmpty
+                            ? strings.nameRequired
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _lastName,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: InputDecoration(labelText: strings.lastName),
                         validator: (value) =>
                             value == null || value.trim().isEmpty
                             ? strings.nameRequired
@@ -253,6 +359,10 @@ class _SignInScreenState extends State<SignInScreen> {
                       const SizedBox(height: 16),
                       _ErrorMessage(message: vm.error!),
                     ],
+                    if (vm.info != null) ...[
+                      const SizedBox(height: 12),
+                      Text(vm.info!, textAlign: TextAlign.center),
+                    ],
                     const SizedBox(height: 22),
                     FilledButton(
                       onPressed: vm.isWorking ? null : _submit,
@@ -268,6 +378,11 @@ class _SignInScreenState extends State<SignInScreen> {
                             : Text(_registering ? strings.createAccount : strings.signIn),
                       ),
                     ),
+                    if (!_registering)
+                      TextButton(
+                        onPressed: vm.isWorking ? null : _showPasswordReset,
+                        child: Text(strings.forgotPassword),
+                      ),
                     TextButton(
                       onPressed: vm.isWorking
                           ? null
@@ -358,6 +473,26 @@ class TaskListScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _openRegistrationRequests(BuildContext context) async {
+    await viewModel.loadRegistrationRequests();
+    if (!context.mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => RegistrationRequestsScreen(viewModel: viewModel),
+      ),
+    );
+  }
+
+  Future<void> _openSurveys(BuildContext context) async {
+    await viewModel.loadSurveys();
+    if (!context.mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => SurveysScreen(viewModel: viewModel),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -372,6 +507,17 @@ class TaskListScreen extends StatelessWidget {
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
             actions: [
+              IconButton(
+                tooltip: strings.surveys,
+                onPressed: () => _openSurveys(context),
+                icon: const Icon(Icons.assignment_outlined),
+              ),
+              if (vm.isManager)
+                IconButton(
+                  tooltip: strings.registrationRequests,
+                  onPressed: () => _openRegistrationRequests(context),
+                  icon: const Icon(Icons.person_add_alt_1_outlined),
+                ),
               if (vm.isManager)
                 IconButton(
                   tooltip: strings.manageUsers,

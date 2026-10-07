@@ -63,9 +63,12 @@
                 @if (auth()->user()->isManager())
                     <a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a>
                     <a href="{{ route('users.index') }}">{{ __('User management') }}</a>
+                    <a href="{{ route('registration-requests.index') }}">{{ __('Registration requests') }}</a>
                     <a href="{{ route('tasks.index') }}">{{ __('All tasks') }}</a>
+                    <a href="{{ route('surveys.index') }}">{{ __('Surveys') }}</a>
                 @else
                     <a href="{{ route('tasks.index') }}">{{ __('My tasks') }}</a>
+                    <a href="{{ route('surveys.index') }}">{{ __('Surveys') }}</a>
                 @endif
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
@@ -73,7 +76,7 @@
                 </form>
             @else
                 <a href="{{ route('login') }}">{{ __('Log in') }}</a>
-                <a class="button button-small" href="{{ route('register') }}">{{ __('Create account') }}</a>
+                <a class="button button-small" href="{{ route('register') }}">{{ __('Request an account') }}</a>
             @endauth
         </nav>
     </header>
